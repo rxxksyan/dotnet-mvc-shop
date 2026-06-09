@@ -22,14 +22,31 @@ ASP.NET Core MVC интернет-магазин смартфонов.
 
 ### Архитектура
 
+Трёхуровневая: `Core → Infrastructure → Web` (зависимость только вниз).
+
 ```
 SmartphoneShop.sln
-├── Core            Сущности, интерфейсы, enum'ы
-├── Infrastructure  DbContext, миграции, репозитории
-└── Web             Контроллеры, представления, статика
+│
+├── SmartphoneShop.Core               # Доменный слой (не зависит ни от чего)
+│   ├── Entities/                      #  13 сущностей: Smartphone, Order, Cart, Review ...
+│   ├── Enums/                         #  OrderStatus, RepairStatus, UserRole
+│   └── Interfaces/                    #  8 репозиториев: ISmartphoneRepository ...
+│
+├── SmartphoneShop.Infrastructure      # Слой данных (зависит от Core)
+│   ├── Data/                          #  AppDbContext + SeedData
+│   ├── Migrations/                    #  4 миграции EF Core
+│   └── Repositories/                  #  9 реализаций (GenericRepository + 8 специфических)
+│
+└── SmartphoneShop.Web                 # Слой представления (зависит от Core + Infrastructure)
+    ├── Controllers/                   #  17 контроллеров
+    ├── Models/                        #  AdminReportViewModel, CartItemModel ...
+    ├── Views/                         #  22 папки с Razor-представлениями
+    ├── Services/                      #  ChartDrawer (SkiaSharp), ReportGenerator (OpenXml)
+    ├── Helpers/                       #  FormatHelper
+    ├── Extensions/                    #  SessionExtensions
+    ├── wwwroot/                       #  Статика: css, js, lib (Bootstrap + jQuery)
+    └── Program.cs                     #  Точка входа, DI, middleware, Serilog
 ```
-
-Трёхуровневая: `Core → Infrastructure → Web` (зависимость только вниз).
 
 ### Быстрый старт
 
