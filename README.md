@@ -36,10 +36,26 @@ ASP.NET Core MVC интернет-магазин смартфонов.
 
 ## Стек технологий
 
-**Backend:** .NET 9 · ASP.NET Core MVC · C# · EF Core 8 + Pomelo MySQL  
-**Auth & Logging:** ASP.NET Core Identity · Serilog  
-**Reporting:** SkiaSharp (графики) · DocumentFormat.OpenXml (Excel) · X.PagedList  
-**Frontend:** Bootstrap 5 · jQuery · Razor Views
+**Backend**  
+![.NET 9](https://img.shields.io/badge/.NET%209-512BD4?logo=dotnet&logoColor=fff)
+![ASP.NET Core MVC](https://img.shields.io/badge/ASP.NET%20Core%20MVC-512BD4?logo=dotnet&logoColor=fff)
+![C#](https://img.shields.io/badge/C%23-239120?logo=csharp&logoColor=fff)
+![EF Core 8](https://img.shields.io/badge/EF%20Core%208-5C2D91?logoColor=fff)
+![Pomelo MySQL](https://img.shields.io/badge/Pomelo_MySQL-4479A1?logo=mysql&logoColor=fff)
+
+**Auth & Logging**  
+![Identity](https://img.shields.io/badge/Identity-512BD4?logo=dotnet&logoColor=fff)
+![Serilog](https://img.shields.io/badge/Serilog-FF7019?logoColor=fff)
+
+**Reporting**  
+![SkiaSharp](https://img.shields.io/badge/SkiaSharp-29B6F6?logoColor=fff)
+![OpenXml](https://img.shields.io/badge/OpenXml-217346?logo=microsoft-excel&logoColor=fff)
+![X.PagedList](https://img.shields.io/badge/X.PagedList-6B21A8?logoColor=fff)
+
+**Frontend**  
+![Bootstrap 5](https://img.shields.io/badge/Bootstrap%205-7952B3?logo=bootstrap&logoColor=fff)
+![jQuery](https://img.shields.io/badge/jQuery-0769AD?logo=jquery&logoColor=fff)
+![Razor Views](https://img.shields.io/badge/Razor%20Views-512BD4?logo=dotnet&logoColor=fff)
 
 ## Архитектура
 
