@@ -2,7 +2,11 @@
 
 ASP.NET Core MVC интернет-магазин смартфонов.
 
-**Стек:** .NET 9 · ASP.NET Core MVC · EF Core 8 + MySQL (Pomelo) · Identity · Serilog · SkiaSharp · OpenXml
+![.NET 9](https://img.shields.io/badge/.NET-9-512BD4?logo=dotnet)
+![ASP.NET Core MVC](https://img.shields.io/badge/ASP.NET%20Core-MVC-512BD4?logo=dotnet)
+![MySQL](https://img.shields.io/badge/MySQL-4479A1?logo=mysql&logoColor=fff)
+![EF Core](https://img.shields.io/badge/EF%20Core-8-512BD4?logo=dotnet)
+![Serilog](https://img.shields.io/badge/Serilog-FFC107?logo=serilog)
 
 ---
 
