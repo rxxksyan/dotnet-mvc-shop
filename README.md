@@ -4,15 +4,16 @@
 
 ASP.NET Core MVC интернет-магазин смартфонов.
 
-[![.NET](https://img.shields.io/badge/.NET_9-512BD4?style=flat-square&logo=dotnet)](https://dotnet.microsoft.com/)
-[![ASP.NET Core](https://img.shields.io/badge/ASP.NET_Core_MVC-512BD4?style=flat-square&logo=dotnet)](https://dotnet.microsoft.com/)
-[![EF Core](https://img.shields.io/badge/EF_Core_8-03530F?style=flat-square&logo=entity-framework)](https://learn.microsoft.com/ef/)
-[![MySQL](https://img.shields.io/badge/MySQL_8-4479A1?style=flat-square&logo=mysql&logoColor=fff)](https://www.mysql.com/)
-[![Identity](https://img.shields.io/badge/Identity-512BD4?style=flat-square&logo=dotnet)](https://learn.microsoft.com/aspnet/identity/)
-[![Serilog](https://img.shields.io/badge/Serilog-FF7019?style=flat-square&logo=serilog)](https://serilog.net/)
-[![SkiaSharp](https://img.shields.io/badge/SkiaSharp-29B6F6?style=flat-square&logo=skia)](https://github.com/mono/SkiaSharp)
-[![OpenXml](https://img.shields.io/badge/OpenXml-217346?style=flat-square&logo=microsoft-excel)](https://github.com/OfficeDev/Open-XML-SDK)
-[![Bootstrap](https://img.shields.io/badge/Bootstrap_5-7952B3?style=flat-square&logo=bootstrap)](https://getbootstrap.com/)
+![.NET 9](https://img.shields.io/badge/.NET_9-512BD4?style=flat-square&logo=dotnet)
+![ASP.NET Core MVC](https://img.shields.io/badge/ASP.NET_Core_MVC-512BD4?style=flat-square&logo=dotnet)
+![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=flat-square&logo=mysql&logoColor=fff)
+![EF Core](https://img.shields.io/badge/EF_Core_8-5C2D91?style=flat-square&logo=entity-framework)
+![Identity](https://img.shields.io/badge/Identity-512BD4?style=flat-square&logo=dotnet)
+![Serilog](https://img.shields.io/badge/Serilog-FF7019?style=flat-square)
+![SkiaSharp](https://img.shields.io/badge/SkiaSharp-29B6F6?style=flat-square)
+![OpenXml](https://img.shields.io/badge/OpenXml-217346?style=flat-square&logo=microsoft-excel)
+![Bootstrap](https://img.shields.io/badge/Bootstrap_5-7952B3?style=flat-square&logo=bootstrap)
+![jQuery](https://img.shields.io/badge/jQuery-0769AD?style=flat-square&logo=jquery)
 
 </div>
 
@@ -35,12 +36,30 @@ ASP.NET Core MVC интернет-магазин смартфонов.
 
 ## Стек технологий
 
-**Backend:** .NET 9 · ASP.NET Core MVC · C# · Entity Framework Core 8 · Pomelo MySQL Provider  
-**Auth:** ASP.NET Core Identity (роли: Admin, Expert, ProductAdmin, RepairSpecialist, User)  
-**Logging:** Serilog (консоль + ежедневные rolling-файлы)  
-**Reporting:** SkiaSharp (графики) · DocumentFormat.OpenXml (Excel-отчёты)  
-**Pagination:** X.PagedList  
-**Frontend:** Bootstrap 5 · jQuery · jQuery Validation · Razor Views
+**Backend**
+
+![.NET 9](https://img.shields.io/badge/.NET_9-512BD4?style=flat-square&logo=dotnet)
+![ASP.NET Core MVC](https://img.shields.io/badge/ASP.NET_Core_MVC-512BD4?style=flat-square&logo=dotnet)
+![C#](https://img.shields.io/badge/C%23-239120?style=flat-square&logo=csharp)
+![EF Core 8](https://img.shields.io/badge/EF_Core_8-5C2D91?style=flat-square&logo=entity-framework)
+![Pomelo MySQL](https://img.shields.io/badge/Pomelo_MySQL-4479A1?style=flat-square&logo=mysql&logoColor=fff)
+
+**Auth & Logging**
+
+![Identity](https://img.shields.io/badge/Identity_User/Admin/Expert/...-512BD4?style=flat-square&logo=dotnet)
+![Serilog](https://img.shields.io/badge/Serilog-FF7019?style=flat-square)
+
+**Reporting**
+
+![SkiaSharp](https://img.shields.io/badge/SkiaSharp-29B6F6?style=flat-square)
+![OpenXml](https://img.shields.io/badge/OpenXml-217346?style=flat-square&logo=microsoft-excel)
+![X.PagedList](https://img.shields.io/badge/X.PagedList-6B21A8?style=flat-square)
+
+**Frontend**
+
+![Bootstrap 5](https://img.shields.io/badge/Bootstrap_5-7952B3?style=flat-square&logo=bootstrap)
+![jQuery](https://img.shields.io/badge/jQuery-0769AD?style=flat-square&logo=jquery)
+![Razor Views](https://img.shields.io/badge/Razor_Views-512BD4?style=flat-square&logo=dotnet)
 
 ## Архитектура
 
