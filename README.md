@@ -1,3 +1,5 @@
+<div align="center">
+
 # SmartphoneShop
 
 ASP.NET Core MVC интернет-магазин смартфонов.
@@ -7,6 +9,8 @@ ASP.NET Core MVC интернет-магазин смартфонов.
 ![MySQL](https://img.shields.io/badge/MySQL-4479A1?logo=mysql&logoColor=fff)
 ![EF Core](https://img.shields.io/badge/EF%20Core-8-512BD4?logo=dotnet)
 ![Serilog](https://img.shields.io/badge/Serilog-FFC107?logo=serilog)
+
+</div>
 
 ---
 
