@@ -4,16 +4,16 @@
 
 ASP.NET Core MVC интернет-магазин смартфонов.
 
-![.NET 9](https://img.shields.io/badge/.NET%209-512BD4?logo=dotnet)
-![ASP.NET Core MVC](https://img.shields.io/badge/ASP.NET%20Core%20MVC-512BD4?logo=dotnet)
+![.NET 9](https://img.shields.io/badge/.NET%209-512BD4?logo=dotnet&logoColor=fff)
+![ASP.NET Core MVC](https://img.shields.io/badge/ASP.NET%20Core%20MVC-512BD4?logo=dotnet&logoColor=fff)
 ![MySQL](https://img.shields.io/badge/MySQL-4479A1?logo=mysql&logoColor=fff)
-![EF Core 8](https://img.shields.io/badge/EF%20Core%208-5C2D91?logo=entity-framework)
-![Identity](https://img.shields.io/badge/Identity-512BD4?logo=dotnet)
-![Serilog](https://img.shields.io/badge/Serilog-FF7019)
-![SkiaSharp](https://img.shields.io/badge/SkiaSharp-29B6F6)
-![OpenXml](https://img.shields.io/badge/OpenXml-217346?logo=microsoft-excel)
-![Bootstrap 5](https://img.shields.io/badge/Bootstrap%205-7952B3?logo=bootstrap)
-![jQuery](https://img.shields.io/badge/jQuery-0769AD?logo=jquery)
+![EF Core 8](https://img.shields.io/badge/EF%20Core%208-5C2D91?logoColor=fff)
+![Identity](https://img.shields.io/badge/Identity-512BD4?logo=dotnet&logoColor=fff)
+![Serilog](https://img.shields.io/badge/Serilog-FF7019?logoColor=fff)
+![SkiaSharp](https://img.shields.io/badge/SkiaSharp-29B6F6?logoColor=fff)
+![OpenXml](https://img.shields.io/badge/OpenXml-217346?logo=microsoft-excel&logoColor=fff)
+![Bootstrap 5](https://img.shields.io/badge/Bootstrap%205-7952B3?logo=bootstrap&logoColor=fff)
+![jQuery](https://img.shields.io/badge/jQuery-0769AD?logo=jquery&logoColor=fff)
 
 </div>
 
