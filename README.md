@@ -5,7 +5,7 @@
 ASP.NET Core MVC интернет-магазин смартфонов.
 
 ![.NET 9](https://img.shields.io/badge/.NET%209-512BD4?logo=dotnet&logoColor=fff)
-![ASP.NET Core MVC](https://img.shields.io/badge/ASP.NET%20Core%20MVC-512BD4?logo=dotnet&logoColor=fff)
+![ASP.NET Core MVC](https://img.shields.io/badge/ASP.NET%20Core%20MVC-0078D4?logo=dotnet&logoColor=fff)
 ![MySQL](https://img.shields.io/badge/MySQL-4479A1?logo=mysql&logoColor=fff)
 ![EF Core 8](https://img.shields.io/badge/EF%20Core%208-5C2D91?logoColor=fff)
 ![Identity](https://img.shields.io/badge/Identity-512BD4?logo=dotnet&logoColor=fff)
@@ -38,7 +38,7 @@ ASP.NET Core MVC интернет-магазин смартфонов.
 
 **Backend**  
 ![.NET 9](https://img.shields.io/badge/.NET%209-512BD4?logo=dotnet&logoColor=fff)
-![ASP.NET Core MVC](https://img.shields.io/badge/ASP.NET%20Core%20MVC-512BD4?logo=dotnet&logoColor=fff)
+![ASP.NET Core MVC](https://img.shields.io/badge/ASP.NET%20Core%20MVC-0078D4?logo=dotnet&logoColor=fff)
 ![C#](https://img.shields.io/badge/C%23-239120?logo=csharp&logoColor=fff)
 ![EF Core 8](https://img.shields.io/badge/EF%20Core%208-5C2D91?logoColor=fff)
 ![Pomelo MySQL](https://img.shields.io/badge/Pomelo_MySQL-4479A1?logo=mysql&logoColor=fff)
