@@ -1,0 +1,49 @@
+@{
+    ViewData["Title"] = "Регистрация";
+}
+
+<section>
+    <div class="container">
+        <h2 class="section-title">Регистрация</h2>
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="service-card" style="margin-bottom: 30px; max-width: 500px; margin-left: auto; margin-right: auto;">
+                <p>@TempData["Error"]</p>
+            </div>
+        }
+
+        <div style="max-width: 500px; margin: 0 auto;">
+            <div class="service-card">
+                <form method="post" action="/account/register">
+                    <div class="form-group">
+                        <label>ФИО</label>
+                        <input type="text" name="fullName" required placeholder="Иванов Иван Иванович" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" name="email" required placeholder="your@email.com" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Номер телефона</label>
+                        <input type="tel" name="phoneNumber" required placeholder="+375..." />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Пароль</label>
+                        <input type="password" name="password" required placeholder="не менее 6 символов" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Подтверждение пароля</label>
+                        <input type="password" name="confirmPassword" required placeholder="повторите пароль" />
+                    </div>
+
+                    <button type="submit" class="cta-button" style="width: 100%; margin-top: 20px;">Зарегистрироваться</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>

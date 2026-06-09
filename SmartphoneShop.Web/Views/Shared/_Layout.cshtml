@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — rxxMRKT</title>
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <a href="/" class="logo">rxx<span>MRKT</span></a>
+                <button class="hamburger" onclick="toggleMenu()" aria-label="Меню">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <nav class="header-nav" id="mobileNav">
+                    <ul>
+                        <li><a href="/">Главная</a></li>
+                        <li><a href="/catalog">Каталог</a></li>
+                        <li><a href="/comparison">Сравнение <span class="comparison-badge" style="background: #D44177; color: #fff; font-size: 11px; width: 20px; height: 20px; border-radius: 50%; display: none; align-items: center; justify-content: center; margin-left: 4px;">0</span></a></li>
+                        <li><a href="/repair">Ремонт</a></li>
+                        <li><a href="/cart">Корзина</a></li>
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li><a href="/favorites">Избранное</a></li>
+                            @if (User.IsInRole("Admin") || User.IsInRole("ProductAdmin") || User.IsInRole("RepairSpecialist") || User.IsInRole("Expert"))
+                            {
+                                <li><a href="/admin">Админка</a></li>
+                            }
+                        }
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li class="mobile-only" style="display:none;"><a href="/account/profile">@User.Identity.Name</a></li>
+                            <li class="mobile-only" style="display:none;">
+                                <form method="post" action="/account/logout">
+                                    <button type="submit" class="nav-logout" style="width:100%;">Выйти</button>
+                                </form>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="mobile-only" style="display:none;"><a href="/account/login">Войти</a></li>
+                            <li class="mobile-only" style="display:none;"><a href="/account/register" class="cta-button" style="padding: 8px 16px; font-size: 14px; text-align:center;">Регистрация</a></li>
+                        }
+                    </ul>
+                </nav>
+                <div class="header-right"><span class="header-auth">@if (User.Identity?.IsAuthenticated == true){<a href="/account/profile" class="nav-user">@User.Identity.Name</a><form method="post" action="/account/logout" style="display:inline;"><button type="submit" class="nav-logout">Выйти</button></form>}else{<a href="/account/login">Войти</a><a href="/account/register" class="cta-button" style="padding:8px 16px;font-size:14px;">Регистрация</a>}</span></div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        @RenderBody()
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 rxxMRKT — Магазин смартфонов</p>
+        </div>
+    </footer>
+
+    <script src="~/js/site.js"></script>
+    <script>
+        function toggleMenu() {
+            document.getElementById('mobileNav').classList.toggle('open');
+        }
+        document.addEventListener('click', function(e) {
+            var nav = document.getElementById('mobileNav');
+            var btn = e.target.closest('.hamburger');
+            if (!btn && !e.target.closest('.header-nav')) {
+                nav.classList.remove('open');
+            }
+        });
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

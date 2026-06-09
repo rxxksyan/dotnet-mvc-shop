@@ -1,0 +1,336 @@
+@model SmartphoneShop.Core.Entities.RepairRequest
+@using SmartphoneShop.Core.Enums
+@{
+    ViewData["Title"] = "Детали ремонта #" + Model.Id;
+}
+
+<style>
+    .repair-details-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .repair-header {
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #3a3a3a;
+    }
+
+    .repair-header h2 {
+        color: #f0f0f0;
+        margin: 0 0 10px 0;
+    }
+
+    .repair-meta {
+        color: #b0b0b0;
+        margin: 0;
+    }
+
+    .repair-card {
+        background: #1a1a1a;
+        border: 1px solid #3a3a3a;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 20px;
+    }
+
+    .repair-details-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .detail-item {
+        background: #242424;
+        padding: 16px;
+        border-radius: 8px;
+    }
+
+    .detail-label {
+        font-size: 11px;
+        color: #b0b0b0;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+    }
+
+    .detail-value {
+        font-size: 16px;
+        color: #f0f0f0;
+        margin: 0;
+    }
+
+    .status-badge {
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        text-transform: uppercase;
+    }
+
+    .status-approval { background: rgba(212, 65, 119, 0.25); color: #D44177; border: 1px solid rgba(212, 65, 119, 0.4); }
+    .status-new { background: rgba(212, 65, 119, 0.15); color: #D44177; }
+    .status-progress { background: rgba(255, 255, 255, 0.1); color: #f0f0f0; }
+    .status-completed { background: rgba(255, 255, 255, 0.1); color: #f0f0f0; }
+    .status-cancelled { background: rgba(100, 100, 100, 0.2); color: #888; }
+
+    .chat-section {
+        margin-top: 30px;
+        padding-top: 30px;
+        border-top: 1px solid #3a3a3a;
+    }
+
+    .chat-section h3 {
+        color: #f0f0f0;
+        margin-bottom: 20px;
+    }
+
+    .messages-container {
+        max-height: 400px;
+        overflow-y: auto;
+        padding: 16px;
+        background: #242424;
+        border-radius: 8px;
+        margin-bottom: 16px;
+    }
+
+    .message {
+        max-width: 70%;
+        padding: 10px 14px;
+        border-radius: 16px;
+        margin-bottom: 12px;
+        font-size: 14px;
+    }
+
+    .message.client {
+        background: #3a3a3a;
+        color: #f0f0f0;
+        border-bottom-right-radius: 4px;
+        margin-left: auto;
+    }
+
+    .message.admin {
+        background: linear-gradient(135deg, #D44177, #b92e63);
+        color: #fff;
+        border-bottom-left-radius: 4px;
+        margin-right: auto;
+    }
+
+    .chat-input-container {
+        display: flex;
+        gap: 12px;
+    }
+
+    .chat-input {
+        flex: 1;
+        padding: 12px 16px;
+        background: #242424;
+        border: 1px solid #3a3a3a;
+        border-radius: 8px;
+        color: #f0f0f0;
+        font-size: 14px;
+    }
+
+    .chat-input:focus {
+        outline: none;
+        border-color: #D44177;
+    }
+
+    .btn-send {
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #D44177, #b92e63);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn-send:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(212, 65, 119, 0.4);
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 24px;
+    }
+
+    .action-btn {
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: none;
+        text-decoration: none;
+    }
+
+    .btn-approve {
+        background: linear-gradient(135deg, #D44177, #b92e63);
+        color: #fff;
+    }
+
+    .btn-approve:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(212, 65, 119, 0.4);
+    }
+
+    .btn-reject {
+        background: #3a3a3a;
+        color: #888;
+    }
+
+    .btn-reject:hover {
+        background: #4a4a4a;
+        color: #f0f0f0;
+        transform: translateY(-2px);
+    }
+
+    .empty-messages {
+        text-align: center;
+        padding: 40px 20px;
+        color: #b0b0b0;
+    }
+
+    .back-link {
+        color: #D44177;
+        text-decoration: none;
+        font-size: 14px;
+        display: inline-block;
+        margin-bottom: 20px;
+    }
+
+    .back-link:hover {
+        text-decoration: underline;
+    }
+</style>
+
+<div class="repair-details-container">
+    <a href="/repair" class="back-link">← Вернуться к заявкам</a>
+
+    <div class="repair-header">
+        <h2>Ремонт #@Model.Id - @Model.SmartphoneModel</h2>
+        <p class="repair-meta">Создан: @Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</p>
+    </div>
+
+    <div class="repair-card">
+        <div class="repair-details-grid">
+            <div class="detail-item">
+                <p class="detail-label">Статус</p>
+                <p class="detail-value">
+                    @{
+                        var detailStatusClass = Model.Status switch
+                        {
+                            RepairStatus.New => "status-new",
+                            RepairStatus.DeliveryToCenter or RepairStatus.AcceptedAtCenter or 
+                                RepairStatus.InQueue or RepairStatus.Diagnostics or RepairStatus.RepairApproval => "status-approval",
+                            RepairStatus.InRepair or RepairStatus.ReadyForPickup => "status-progress",
+                            RepairStatus.Completed => "status-completed",
+                            RepairStatus.Cancelled => "status-cancelled",
+                            _ => "status-approval"
+                        };
+                        var detailStatusText = Model.Status switch
+                        {
+                            RepairStatus.New => "Новая",
+                            RepairStatus.DeliveryToCenter => "Доставка в центр",
+                            RepairStatus.AcceptedAtCenter => "Принят в центр",
+                            RepairStatus.InQueue => "В очереди",
+                            RepairStatus.Diagnostics => "Диагностика",
+                            RepairStatus.RepairApproval => "Ожидает одобрения",
+                            RepairStatus.InRepair => "В ремонте",
+                            RepairStatus.ReadyForPickup => "Готов к выдаче",
+                            RepairStatus.Completed => "Завершён",
+                            RepairStatus.Cancelled => "Отменён",
+                            _ => Model.Status.ToString()
+                        };
+                    }
+                    <span class="status-badge @detailStatusClass">@detailStatusText</span>
+                </p>
+            </div>
+
+            <div class="detail-item">
+                <p class="detail-label">Описание проблемы</p>
+                <p class="detail-value">@Model.IssueDescription</p>
+            </div>
+
+            @if (Model.EstimatedPrice.HasValue)
+            {
+                <div class="detail-item">
+                    <p class="detail-label">Ориентировочная стоимость</p>
+                    <p class="detail-value" style="color: #D44177;">@Model.EstimatedPrice.Value.ToString("N0") BYN</p>
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(Model.AdminNotes))
+            {
+                <div class="detail-item">
+                    <p class="detail-label">Примечание мастера</p>
+                    <p class="detail-value">@Model.AdminNotes</p>
+                </div>
+            }
+        </div>
+
+        @if (Model.Status == RepairStatus.RepairApproval)
+        {
+            <div style="margin-bottom: 20px; padding: 16px; background: rgba(212, 65, 119, 0.1); border-radius: 8px;">
+                <p style="color: #f0f0f0; margin: 0 0 8px 0;"><strong>⚠️ Требуется ваше одобрение</strong></p>
+                <p style="color: #b0b0b0; margin: 0;">Мастер завершил диагностику и ожидает вашего согласия на проведение ремонта по указанной стоимости.</p>
+            </div>
+
+            <div class="action-buttons">
+                <form method="post" action="/repair/respond" style="display: inline;">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <input type="hidden" name="approve" value="true" />
+                    <button type="submit" class="action-btn btn-approve">✓ Одобрить ремонт</button>
+                </form>
+                
+                <form method="post" action="/repair/respond" style="display: inline;">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <input type="hidden" name="approve" value="false" />
+                    <button type="submit" class="action-btn btn-reject">✗ Отклонить</button>
+                </form>
+            </div>
+        }
+    </div>
+
+    <div class="chat-section">
+        <h3>Чат с мастером</h3>
+
+        <div class="messages-container">
+            @if (!string.IsNullOrEmpty(Model.AdminNotes))
+            {
+                <div class="message admin">
+                    <p style="margin: 0;">@Model.AdminNotes</p>
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(Model.ClientMessage))
+            {
+                <div class="message client">
+                    <p style="margin: 0;">@Model.ClientMessage</p>
+                </div>
+            }
+
+            @if (string.IsNullOrEmpty(Model.AdminNotes) && string.IsNullOrEmpty(Model.ClientMessage))
+            {
+                <div class="empty-messages">
+                    <p>Сообщений пока нет. Напишите мастеру для уточнения деталей.</p>
+                </div>
+            }
+        </div>
+
+        <form method="post" action="/repair/respond" class="chat-input-container">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" value="@Model.Id" />
+            <input type="text" name="message" class="chat-input" placeholder="Напишите сообщение мастеру..." required>
+            <button type="submit" class="btn-send">Отправить</button>
+        </form>
+    </div>
+</div>

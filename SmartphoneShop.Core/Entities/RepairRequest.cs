@@ -1,0 +1,20 @@
+using SmartphoneShop.Core.Enums;
+
+namespace SmartphoneShop.Core.Entities;
+
+public class RepairRequest
+{
+    public int Id { get; set; }
+    public string UserId { get; set; } = string.Empty;
+    public string SmartphoneModel { get; set; } = string.Empty;
+    public string IssueDescription { get; set; } = string.Empty;
+    public RepairStatus Status { get; set; } = RepairStatus.New;
+    public decimal? EstimatedPrice { get; set; }
+    public string? AdminNotes { get; set; }
+    public string? ClientMessage { get; set; }
+    public bool? ClientApproved { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+    public virtual AppUser User { get; set; } = null!;
+}

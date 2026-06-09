@@ -1,0 +1,447 @@
+@model X.PagedList.IPagedList<SmartphoneShop.Core.Entities.RepairRequest>
+@{
+    ViewData["Title"] = "Заявки на ремонт";
+}
+
+<style>
+    .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .admin-table th {
+        padding: 14px 16px;
+        text-align: left;
+        color: #888;
+        font-weight: 500;
+        font-size: 13px;
+        text-transform: uppercase;
+        border-bottom: 1px solid #2c2c2c;
+    }
+    .admin-table td {
+        padding: 14px 16px;
+        border-bottom: 1px solid #2c2c2c;
+        color: #f0f0f0;
+    }
+    .admin-table tr:last-child td {
+        border-bottom: none;
+    }
+    .admin-table tr:hover {
+        background: rgba(212, 65, 119, 0.05);
+    }
+    .status-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+    .status-new { background: rgba(212, 65, 119, 0.15); color: #D44177; }
+    .status-pending { background: rgba(212, 65, 119, 0.2); color: #D44177; }
+    .status-in-progress { background: rgba(212, 65, 119, 0.25); color: #D44177; border: 1px solid rgba(212, 65, 119, 0.4); }
+    .status-completed { background: rgba(255, 255, 255, 0.1); color: #f0f0f0; }
+    .status-cancelled { background: rgba(100, 100, 100, 0.2); color: #888; }
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 12px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .btn-primary { background: #D44177; color: #fff; }
+    .btn-primary:hover { background: #b83565; }
+    .btn-primary:disabled {
+        background: #555;
+        color: #aaa;
+        cursor: not-allowed;
+    }
+    .filter-bar {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+    .filter-link {
+        padding: 8px 16px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+    .filter-link.active { background: #D44177; color: #fff; }
+    .filter-link:not(.active) { background: #2c2c2c; color: #f0f0f0; border: 1px solid #3a3a3a; }
+    .filter-link:not(.active):hover { background: #3a3a3a; }
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-content {
+        background: #1a1a1a;
+        border: 1px solid #2c2c2c;
+        border-radius: 12px;
+        padding: 30px;
+        max-width: 480px;
+        width: 90%;
+    }
+    .modal-content h3 {
+        margin: 0 0 8px 0;
+        color: #f0f0f0;
+    }
+    .form-control {
+        width: 100%;
+        padding: 10px 14px;
+        background: #2c2c2c;
+        border: 1px solid #3a3a3a;
+        border-radius: 8px;
+        color: #f0f0f0;
+        font-size: 14px;
+    }
+    .form-control:focus { outline: none; border-color: #D44177; }
+    .form-label {
+        display: block;
+        margin-bottom: 6px;
+        color: #888;
+        font-size: 13px;
+    }
+    .admin-notes {
+        background: #252525;
+        border-left: 3px solid #D44177;
+        padding: 8px 12px;
+        margin-top: 6px;
+        font-size: 13px;
+        color: #aaa;
+        font-style: italic;
+    }
+    .repair-info {
+        font-size: 12px;
+        color: #666;
+        margin-top: 4px;
+    }
+</style>
+
+<section>
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h2 class="section-title" style="margin: 0;">Заявки на ремонт</h2>
+        </div>
+
+        <div class="filter-bar">
+            <a href="/adminrepairs" class="filter-link @(ViewBag.Status == null ? "active" : "")">Все</a>
+            <a href="/adminrepairs?status=New" class="filter-link @(ViewBag.Status == "New" ? "active" : "")">Новые</a>
+            <a href="/adminrepairs?status=DeliveryToCenter" class="filter-link @(ViewBag.Status == "DeliveryToCenter" ? "active" : "")">Доставка в центр</a>
+            <a href="/adminrepairs?status=AcceptedAtCenter" class="filter-link @(ViewBag.Status == "AcceptedAtCenter" ? "active" : "")">Принят в центр</a>
+            <a href="/adminrepairs?status=InQueue" class="filter-link @(ViewBag.Status == "InQueue" ? "active" : "")">В очереди</a>
+            <a href="/adminrepairs?status=Diagnostics" class="filter-link @(ViewBag.Status == "Diagnostics" ? "active" : "")">Диагностика</a>
+            <a href="/adminrepairs?status=RepairApproval" class="filter-link @(ViewBag.Status == "RepairApproval" ? "active" : "")">Ожидает одобрения</a>
+            <a href="/adminrepairs?status=InRepair" class="filter-link @(ViewBag.Status == "InRepair" ? "active" : "")">В ремонте</a>
+            <a href="/adminrepairs?status=ReadyForPickup" class="filter-link @(ViewBag.Status == "ReadyForPickup" ? "active" : "")">Готов к выдаче</a>
+            <a href="/adminrepairs?status=Completed" class="filter-link @(ViewBag.Status == "Completed" ? "active" : "")">Завершённые</a>
+            <a href="/adminrepairs?status=Cancelled" class="filter-link @(ViewBag.Status == "Cancelled" ? "active" : "")">Отменённые</a>
+        </div>
+
+        <div class="card" style="padding: 0; background: #1a1a1a; border: 1px solid #2c2c2c; border-radius: 12px; overflow: hidden;">
+            <div style="overflow-x: auto;">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>№</th>
+                            <th>Пользователь</th>
+                            <th>Устройство / Проблема</th>
+                            <th>Дата</th>
+                            <th>Статус</th>
+                            <th>Цена</th>
+                            <th>Решение клиента</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var repair in Model)
+                        {
+                            <tr>
+                                <td><strong>#@repair.Id</strong></td>
+                                <td>@repair.User?.FullName</td>
+                                <td>
+                                    @repair.SmartphoneModel
+                                    @if (!string.IsNullOrEmpty(repair.IssueDescription))
+                                    {
+                                        <div class="repair-info">@repair.IssueDescription</div>
+                                    }
+                                    @if (!string.IsNullOrEmpty(repair.AdminNotes))
+                                    {
+                                        <div class="admin-notes">📝 @repair.AdminNotes</div>
+                                    }
+                                </td>
+                                <td>@repair.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                                <td>
+                                    @{
+                                        var statusClass = repair.Status switch
+                                        {
+                                            SmartphoneShop.Core.Enums.RepairStatus.New => "status-new",
+                                            SmartphoneShop.Core.Enums.RepairStatus.DeliveryToCenter or 
+                                                SmartphoneShop.Core.Enums.RepairStatus.AcceptedAtCenter or 
+                                                SmartphoneShop.Core.Enums.RepairStatus.InQueue or 
+                                                SmartphoneShop.Core.Enums.RepairStatus.Diagnostics or 
+                                                SmartphoneShop.Core.Enums.RepairStatus.RepairApproval => "status-pending",
+                                            SmartphoneShop.Core.Enums.RepairStatus.InRepair or 
+                                                SmartphoneShop.Core.Enums.RepairStatus.ReadyForPickup => "status-in-progress",
+                                            SmartphoneShop.Core.Enums.RepairStatus.Completed => "status-completed",
+                                            SmartphoneShop.Core.Enums.RepairStatus.Cancelled => "status-cancelled",
+                                            _ => ""
+                                        };
+                                        var statusText = repair.Status switch
+                                        {
+                                            SmartphoneShop.Core.Enums.RepairStatus.New => "Новая",
+                                            SmartphoneShop.Core.Enums.RepairStatus.DeliveryToCenter => "Доставка в центр",
+                                            SmartphoneShop.Core.Enums.RepairStatus.AcceptedAtCenter => "Принят в центр",
+                                            SmartphoneShop.Core.Enums.RepairStatus.InQueue => "В очереди",
+                                            SmartphoneShop.Core.Enums.RepairStatus.Diagnostics => "Диагностика",
+                                            SmartphoneShop.Core.Enums.RepairStatus.RepairApproval => "Ожидает одобрения",
+                                            SmartphoneShop.Core.Enums.RepairStatus.InRepair => "В ремонте",
+                                            SmartphoneShop.Core.Enums.RepairStatus.ReadyForPickup => "Готов к выдаче",
+                                            SmartphoneShop.Core.Enums.RepairStatus.Completed => "Завершён",
+                                            SmartphoneShop.Core.Enums.RepairStatus.Cancelled => "Отменён",
+                                            _ => repair.Status.ToString()
+                                        };
+                                    }
+                                    <span class="status-badge @statusClass">@statusText</span>
+                                </td>
+                                <td>
+                                    @(repair.EstimatedPrice.HasValue ? repair.EstimatedPrice.Value.ToString("N0") + " BYN" : "-")
+                                </td>
+                                <td>
+                                    @if (repair.Status == SmartphoneShop.Core.Enums.RepairStatus.RepairApproval)
+                                    {
+                                        if (repair.ClientApproved == true)
+                                        {
+                                            <span style="color: #D44177;">✓ Одобрено</span>
+                                        }
+                                        else if (repair.ClientApproved == false)
+                                        {
+                                            <span style="color: #888;">✗ Отклонено</span>
+                                        }
+                                        else
+                                        {
+                                            <span style="color: #b0b0b0;">⏳ Ждёт решения</span>
+                                        }
+                                    }
+                                    else if (repair.ClientApproved == true)
+                                    {
+                                        <span style="color: #D44177;">✓ Да</span>
+                                    }
+                                    else if (repair.ClientApproved == false)
+                                    {
+                                        <span style="color: #888;">✗ Нет</span>
+                                    }
+                                    else
+                                    {
+                                        <span style="color: #888;">—</span>
+                                    }
+                                </td>
+                                <td>
+                                    <button type="button" 
+                                            class="btn-sm btn-primary repair-action-btn" 
+                                            data-repair-id="@repair.Id" 
+                                            data-repair-status="@repair.Status"
+                                            data-client-approved="@repair.ClientApproved"
+                                            @(repair.Status == SmartphoneShop.Core.Enums.RepairStatus.Completed || 
+                                              repair.Status == SmartphoneShop.Core.Enums.RepairStatus.Cancelled ? "disabled" : "")>
+                                        Изменить статус
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div id="repairModal" class="modal-overlay">
+    <div class="modal-content">
+        <h3>Изменить статус</h3>
+        <p id="repairModalInfo"></p>
+        
+        <form id="repairStatusForm" method="post" action="/adminrepairs/updatestatus">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" id="repairId" />
+            
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label class="form-label">Новый статус</label>
+                <select name="status" class="form-control" id="statusSelect" required></select>
+                <p id="statusWarning" style="color: #b0b0b0; font-size: 12px; margin-top: 8px; display: none;"></p>
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label class="form-label">Стоимость ремонта (BYN)</label>
+                <input type="number" name="estimatedPrice" class="form-control" step="0.01" placeholder="Необязательно" />
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label class="form-label">Комментарий мастера</label>
+                <textarea name="adminNotes" class="form-control" rows="3" placeholder="Добавьте комментарий для пользователя..."></textarea>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button type="submit" class="cta-button" style="flex: 1;">Сохранить</button>
+                <button type="button" onclick="closeRepairModal()" class="cta-button" style="flex: 1; background: #2c2c2c;">Отмена</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Порядок статусов (нельзя идти назад или перескакивать)
+    var statusOrder = ['New', 'DeliveryToCenter', 'AcceptedAtCenter', 'InQueue', 'Diagnostics', 'RepairApproval', 'InRepair', 'ReadyForPickup', 'Completed'];
+
+    // Допустимые переходы статусов
+    function getAllowedTransitions(currentStatus, clientApproved) {
+        // Финальные статусы - нельзя менять
+        if (currentStatus === 'Completed' || currentStatus === 'Cancelled') {
+            return [];
+        }
+
+        // Если клиент отклонил и уже Cancelled
+        if (clientApproved === 'False' && currentStatus === 'Cancelled') {
+            return [];
+        }
+
+        var transitions = {
+            'New': ['DeliveryToCenter', 'Cancelled'],
+            'DeliveryToCenter': ['AcceptedAtCenter', 'Cancelled'],
+            'AcceptedAtCenter': ['InQueue', 'Cancelled'],
+            'InQueue': ['Diagnostics', 'Cancelled'],
+            'Diagnostics': ['RepairApproval', 'Cancelled'],
+            'InRepair': ['ReadyForPickup', 'Cancelled'],
+            'ReadyForPickup': ['Completed', 'Cancelled']
+        };
+
+        // RepairApproval зависит от решения клиента
+        if (currentStatus === 'RepairApproval') {
+            if (clientApproved === 'True') {
+                return ['InRepair', 'Cancelled'];
+            } else if (clientApproved === 'False') {
+                return []; // Уже должно быть Cancelled
+            } else {
+                return ['Cancelled']; // Ждём клиента, можно только отменить
+            }
+        }
+
+        return transitions[currentStatus] || [];
+    }
+
+    var statusNames = {
+        'New': 'Новая',
+        'DeliveryToCenter': 'Доставка в центр',
+        'AcceptedAtCenter': 'Принят в центр',
+        'InQueue': 'В очереди',
+        'Diagnostics': 'Диагностика',
+        'RepairApproval': 'Ожидает одобрения',
+        'InRepair': 'В ремонте',
+        'ReadyForPickup': 'Готов к выдаче',
+        'Completed': 'Завершён',
+        'Cancelled': 'Отменён'
+    };
+
+    document.querySelectorAll('.repair-action-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var repairId = this.dataset.repairId;
+            var repairStatus = this.dataset.repairStatus;
+            var clientApproved = this.dataset.clientApproved;
+            
+            document.getElementById('repairId').value = repairId;
+            document.getElementById('repairModalInfo').textContent = 'Заявка #' + repairId;
+            
+            var statusSelect = document.getElementById('statusSelect');
+            statusSelect.innerHTML = '';
+            
+            var allowed = getAllowedTransitions(repairStatus, clientApproved);
+            
+            if (allowed.length === 0) {
+                var option = document.createElement('option');
+                option.value = '';
+                option.text = 'Нет доступных статусов';
+                statusSelect.appendChild(option);
+                statusSelect.disabled = true;
+            } else {
+                statusSelect.disabled = false;
+                allowed.forEach(function(s) {
+                    var option = document.createElement('option');
+                    option.value = s;
+                    option.text = statusNames[s] || s;
+                    statusSelect.appendChild(option);
+                });
+            }
+            
+            var warningEl = document.getElementById('statusWarning');
+            if (repairStatus === 'RepairApproval') {
+                if (clientApproved === undefined || clientApproved === '' || clientApproved === null) {
+                    warningEl.textContent = '⚠ Клиент ещё не принял решение. Доступно только: Отменён.';
+                    warningEl.style.display = 'block';
+                } else if (clientApproved === 'False') {
+                    warningEl.textContent = '⚠ Клиент отклонил ремонт. Заявка отменена.';
+                    warningEl.style.display = 'block';
+                } else if (clientApproved === 'True') {
+                    warningEl.textContent = '✓ Клиент одобрил ремонт. Можно перевести в статус "В ремонте".';
+                    warningEl.style.color = '#D44177';
+                    warningEl.style.display = 'block';
+                }
+            } else {
+                warningEl.style.display = 'none';
+            }
+            
+            // Очищаем предыдущие значения
+            document.querySelector('input[name="estimatedPrice"]').value = '';
+            document.querySelector('textarea[name="adminNotes"]').value = '';
+            
+            document.getElementById('repairModal').classList.add('active');
+        });
+    });
+    
+    function closeRepairModal() {
+        document.getElementById('repairModal').classList.remove('active');
+    }
+    
+    document.getElementById('repairModal').addEventListener('click', function(e) {
+        if (e.target === this) closeRepairModal();
+    });
+</script>
+
+@if (Model.PageCount > 1)
+{
+    <div class="pagination" style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 20px; padding: 16px 0;">
+        @if (Model.HasPreviousPage)
+        {
+            <a href="@Url.Action("Index", new { status = ViewBag.Status, page = Model.PageNumber - 1, pageSize = Model.PageSize })" class="page-link" style="padding: 8px 16px; background: #2c2c2c; color: #f0f0f0; border-radius: 6px; text-decoration: none; font-size: 14px;">← Назад</a>
+        }
+
+        @for (int i = 1; i <= Model.PageCount; i++)
+        {
+            if (i == Model.PageNumber)
+            {
+                <span style="padding: 8px 12px; background: #D44177; color: #fff; border-radius: 6px; font-size: 14px; font-weight: 600;">@i</span>
+            }
+            else
+            {
+                <a href="@Url.Action("Index", new { status = ViewBag.Status, page = i, pageSize = Model.PageSize })" class="page-link" style="padding: 8px 12px; background: #2c2c2c; color: #f0f0f0; border-radius: 6px; text-decoration: none; font-size: 14px;">@i</a>
+            }
+        }
+
+        @if (Model.HasNextPage)
+        {
+            <a href="@Url.Action("Index", new { status = ViewBag.Status, page = Model.PageNumber + 1, pageSize = Model.PageSize })" class="page-link" style="padding: 8px 16px; background: #2c2c2c; color: #f0f0f0; border-radius: 6px; text-decoration: none; font-size: 14px;">Вперёд →</a>
+        }
+
+        <span style="color: #888; font-size: 13px; margin-left: 10px;">Страница @Model.PageNumber из @Model.PageCount | Всего: @Model.TotalItemCount</span>
+    </div>
+}

@@ -1,0 +1,153 @@
+@model X.PagedList.IPagedList<SmartphoneShop.Core.Entities.Order>
+@{
+    ViewData["Title"] = "Управление заказами";
+}
+
+<style>
+    .admin-table { width: 100%; border-collapse: collapse; }
+    .admin-table th { padding: 14px 16px; text-align: left; color: #888; font-weight: 500; font-size: 13px; text-transform: uppercase; border-bottom: 1px solid #2c2c2c; }
+    .admin-table td { padding: 14px 16px; border-bottom: 1px solid #2c2c2c; color: #f0f0f0; }
+    .admin-table tr:last-child td { border-bottom: none; }
+    .admin-table tr:hover { background: rgba(212, 65, 119, 0.05); }
+    .status-badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; }
+    .status-new { background: rgba(212, 65, 119, 0.15); color: #D44177; }
+    .status-pending { background: rgba(212, 65, 119, 0.2); color: #D44177; }
+    .status-progress { background: rgba(212, 65, 119, 0.25); color: #D44177; border: 1px solid rgba(212, 65, 119, 0.4); }
+    .status-done { background: rgba(255, 255, 255, 0.1); color: #f0f0f0; }
+    .status-cancelled { background: rgba(100, 100, 100, 0.2); color: #888; }
+    .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 6px; border: none; cursor: pointer; transition: all 0.2s; }
+    .btn-primary { background: #D44177; color: #fff; }
+    .btn-primary:hover { background: #b83565; }
+    .btn-primary:disabled { background: #555; color: #aaa; cursor: not-allowed; }
+    .btn-cancel { background: #3a3a3a; color: #f0f0f0; }
+    .btn-cancel:hover { background: #555; }
+    .filter-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+    .filter-link { padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 500; transition: all 0.2s; }
+    .filter-link.active { background: #D44177; color: #fff; }
+    .filter-link:not(.active) { background: #2c2c2c; color: #f0f0f0; border: 1px solid #3a3a3a; }
+    .filter-link:not(.active):hover { background: #3a3a3a; }
+</style>
+
+<section>
+    <div class="container">
+        <h2 class="section-title">Управление заказами</h2>
+
+        @if (TempData["Message"] != null)
+        {
+            <div style="padding: 15px; margin-bottom: 20px; background: rgba(46,204,113,0.1); border: 1px solid #2ecc71; border-radius: 8px; color: #2ecc71;">@TempData["Message"]</div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div style="padding: 15px; margin-bottom: 20px; background: rgba(231,76,60,0.1); border: 1px solid #e74c3c; border-radius: 8px; color: #e74c3c;">@TempData["Error"]</div>
+        }
+
+        <div class="filter-bar">
+            <a href="/adminorders" class="filter-link @(ViewBag.Status == null ? "active" : "")">Все</a>
+            <a href="/adminorders?status=Pending" class="filter-link @(ViewBag.Status == "Pending" ? "active" : "")">Новые</a>
+            <a href="/adminorders?status=Confirmed" class="filter-link @(ViewBag.Status == "Confirmed" ? "active" : "")">Упаковка</a>
+            <a href="/adminorders?status=Shipped" class="filter-link @(ViewBag.Status == "Shipped" ? "active" : "")">Доставка</a>
+            <a href="/adminorders?status=Delivered" class="filter-link @(ViewBag.Status == "Delivered" ? "active" : "")">Завершённые</a>
+            <a href="/adminorders?status=Cancelled" class="filter-link @(ViewBag.Status == "Cancelled" ? "active" : "")">Отменённые</a>
+        </div>
+
+        <div class="card" style="padding: 0; background: #1a1a1a; border: 1px solid #2c2c2c; border-radius: 12px; overflow: hidden;">
+            <div style="overflow-x: auto;">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>№</th>
+                            <th>Пользователь</th>
+                            <th>Товары</th>
+                            <th>Сумма</th>
+                            <th>Дата</th>
+                            <th>Статус</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var order in Model)
+                        {
+                            var sc = order.Status switch {
+                                SmartphoneShop.Core.Enums.OrderStatus.Pending => "status-new",
+                                SmartphoneShop.Core.Enums.OrderStatus.Confirmed => "status-pending",
+                                SmartphoneShop.Core.Enums.OrderStatus.Shipped => "status-progress",
+                                SmartphoneShop.Core.Enums.OrderStatus.Delivered => "status-done",
+                                SmartphoneShop.Core.Enums.OrderStatus.Cancelled => "status-cancelled",
+                                _ => ""
+                            };
+                            var sn = order.Status switch {
+                                SmartphoneShop.Core.Enums.OrderStatus.Pending => "Новый",
+                                SmartphoneShop.Core.Enums.OrderStatus.Confirmed => "Упаковка",
+                                SmartphoneShop.Core.Enums.OrderStatus.Shipped => "Доставка",
+                                SmartphoneShop.Core.Enums.OrderStatus.Delivered => "Завершён",
+                                SmartphoneShop.Core.Enums.OrderStatus.Cancelled => "Отменён",
+                                _ => order.Status.ToString()
+                            };
+                            var isFinal = order.Status == SmartphoneShop.Core.Enums.OrderStatus.Delivered || order.Status == SmartphoneShop.Core.Enums.OrderStatus.Cancelled;
+                            <tr>
+                                <td><strong>#@order.Id</strong></td>
+                                <td>@(order.User?.FullName ?? order.User?.UserName ?? order.ContactName)</td>
+                                <td>
+                                    @foreach (var item in order.Items)
+                                    {
+                                        <div style="font-size:13px;">@(item.Smartphone?.ModelName ?? "—") × @item.Quantity</div>
+                                    }
+                                </td>
+                                <td style="color:#D44177;">@order.TotalAmount.ToString("N0") BYN</td>
+                                <td>@order.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                                <td><span class="status-badge @sc">@sn</span></td>
+                                <td>
+                                    @if (!isFinal)
+                                    {
+                                        <form method="post" action="/adminorders/updatestatus" style="display:inline;">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@order.Id" />
+                                            @if (order.Status == SmartphoneShop.Core.Enums.OrderStatus.Pending)
+                                            {
+                                                <button type="submit" name="status" value="Confirmed" class="btn-sm btn-primary">В упаковку</button>
+                                                <button type="submit" name="status" value="Cancelled" class="btn-sm btn-cancel" style="margin-left:4px;">Отменить</button>
+                                            }
+                                            else if (order.Status == SmartphoneShop.Core.Enums.OrderStatus.Confirmed)
+                                            {
+                                                <button type="submit" name="status" value="Shipped" class="btn-sm btn-primary">В доставку</button>
+                                                <button type="submit" name="status" value="Cancelled" class="btn-sm btn-cancel" style="margin-left:4px;">Отменить</button>
+                                            }
+                                            else if (order.Status == SmartphoneShop.Core.Enums.OrderStatus.Shipped)
+                                            {
+                                                <button type="submit" name="status" value="Delivered" class="btn-sm btn-primary">Завершить</button>
+                                            }
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <span style="color:#888;font-size:12px;">Финальный статус</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+@if (Model.PageCount > 1)
+{
+    <div class="pagination" style="display:flex;justify-content:center;align-items:center;gap:8px;margin-top:20px;padding:16px 0;">
+        @if (Model.HasPreviousPage)
+        {
+            <a href="@Url.Action("Index",new{status=ViewBag.Status,page=Model.PageNumber-1,pageSize=Model.PageSize})" class="page-link" style="padding:8px 16px;background:#2c2c2c;color:#f0f0f0;border-radius:6px;text-decoration:none;font-size:14px;">← Назад</a>
+        }
+        @for (int i = 1; i <= Model.PageCount; i++)
+        {
+            if (i == Model.PageNumber) { <span style="padding:8px 12px;background:#D44177;color:#fff;border-radius:6px;font-size:14px;font-weight:600;">@i</span> }
+            else { <a href="@Url.Action("Index",new{status=ViewBag.Status,page=i,pageSize=Model.PageSize})" class="page-link" style="padding:8px 12px;background:#2c2c2c;color:#f0f0f0;border-radius:6px;text-decoration:none;font-size:14px;">@i</a> }
+        }
+        @if (Model.HasNextPage)
+        {
+            <a href="@Url.Action("Index",new{status=ViewBag.Status,page=Model.PageNumber+1,pageSize=Model.PageSize})" class="page-link" style="padding:8px 16px;background:#2c2c2c;color:#f0f0f0;border-radius:6px;text-decoration:none;font-size:14px;">Вперёд →</a>
+        }
+        <span style="color:#888;font-size:13px;margin-left:10px;">Страница @Model.PageNumber из @Model.PageCount | Всего: @Model.TotalItemCount</span>
+    </div>
+}

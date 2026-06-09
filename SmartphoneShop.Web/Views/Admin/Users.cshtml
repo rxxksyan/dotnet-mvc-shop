@@ -1,0 +1,326 @@
+@model IEnumerable<SmartphoneShop.Core.Entities.AppUser>
+@{
+    ViewData["Title"] = "Управление пользователями";
+    var userRoles = ViewBag.UserRoles as Dictionary<string, IList<string>>;
+    var availableRoles = ViewBag.AvailableRoles as string[];
+    
+    // Словарь перевода ролей
+    var roleTranslations = new Dictionary<string, string>
+    {
+        { "Admin", "Администратор" },
+        { "Expert", "Эксперт" },
+        { "ProductAdmin", "Админ товаров" },
+        { "RepairSpecialist", "Специалист ремонта" },
+        { "User", "Пользователь" }
+    };
+    
+    string GetRoleName(string role)
+    {
+        return roleTranslations.ContainsKey(role) ? roleTranslations[role] : role;
+    }
+}
+
+<style>
+    .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .admin-table th {
+        padding: 14px 16px;
+        text-align: left;
+        color: #888;
+        font-weight: 500;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid #2c2c2c;
+    }
+    
+    .admin-table td {
+        padding: 14px 16px;
+        border-bottom: 1px solid #2c2c2c;
+        color: #f0f0f0;
+    }
+    
+    .admin-table tr:last-child td {
+        border-bottom: none;
+    }
+    
+    .admin-table tr:hover {
+        background: rgba(212, 65, 119, 0.05);
+    }
+    
+    .role-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(212, 65, 119, 0.15);
+        color: #D44177;
+        border-radius: 6px;
+        padding: 4px 10px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+    
+    .role-badge button {
+        background: none;
+        border: none;
+        color: #D44177;
+        cursor: pointer;
+        padding: 0;
+        opacity: 0.6;
+        transition: opacity 0.2s;
+    }
+    
+    .role-badge button:hover {
+        opacity: 1;
+    }
+    
+    .role-badge button svg {
+        width: 14px;
+        height: 14px;
+        stroke: #D44177;
+    }
+    
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 12px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .btn-primary {
+        background: #D44177;
+        color: #fff;
+    }
+    
+    .btn-primary:hover {
+        background: #b83565;
+    }
+    
+    .btn-danger {
+        background: rgba(231, 76, 60, 0.15);
+        color: #e74c3c;
+    }
+    
+    .btn-danger:hover {
+        background: rgba(231, 76, 60, 0.25);
+    }
+    
+    .btn-secondary {
+        background: #2c2c2c;
+        color: #f0f0f0;
+        border: 1px solid #3a3a3a;
+    }
+    
+    .btn-secondary:hover {
+        background: #3a3a3a;
+    }
+    
+    .actions-cell {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .modal-overlay.active {
+        display: flex;
+    }
+    
+    .modal-content {
+        background: #1a1a1a;
+        border: 1px solid #2c2c2c;
+        border-radius: 12px;
+        padding: 30px;
+        max-width: 420px;
+        width: 90%;
+    }
+    
+    .modal-content h3 {
+        margin: 0 0 8px 0;
+        color: #f0f0f0;
+    }
+    
+    .modal-content p {
+        color: #888;
+        margin: 0 0 20px 0;
+    }
+    
+    .role-select-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 20px;
+    }
+    
+    .role-select-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 14px;
+        background: #2c2c2c;
+        border-radius: 8px;
+    }
+    
+    .role-select-item span {
+        color: #f0f0f0;
+        font-size: 14px;
+    }
+</style>
+
+<section>
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h2 class="section-title" style="margin: 0;">Управление пользователями</h2>
+        </div>
+
+        @if (TempData["Message"] != null)
+        {
+            <div style="padding: 15px; margin-bottom: 20px; background: rgba(46,204,113,0.1); border: 1px solid #2ecc71; border-radius: 8px; color: #2ecc71;">
+                @TempData["Message"]
+            </div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div style="padding: 15px; margin-bottom: 20px; background: rgba(231,76,60,0.1); border: 1px solid #e74c3c; border-radius: 8px; color: #e74c3c;">
+                @TempData["Error"]
+            </div>
+        }
+
+        <div class="card" style="padding: 0; background: #1a1a1a; border: 1px solid #2c2c2c; border-radius: 12px; overflow: hidden;">
+            <div style="overflow-x: auto;">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Пользователь</th>
+                            <th>Email</th>
+                            <th>Роли</th>
+                            <th style="width: 200px;">Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@user.FullName</strong>
+                                    <div style="color: #888; font-size: 12px; margin-top: 2px;">@user.CreatedAt.ToString("dd.MM.yyyy")</div>
+                                </td>
+                                <td>@user.Email</td>
+                                <td>
+                                    <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                                        @if (userRoles != null && userRoles.ContainsKey(user.Id))
+                                        {
+                                            @foreach (var role in userRoles[user.Id])
+                                            {
+                                                 <span class="role-badge">
+                                                     @GetRoleName(role)
+                                                      @if (role != "Admin" && role != "User")
+                                                     {
+                                                         <form method="post" action="/admin/removerole" style="display: inline;">
+                                                             @Html.AntiForgeryToken()
+                                                             <input type="hidden" name="userId" value="@user.Id" />
+                                                             <input type="hidden" name="role" value="@role" />
+                                                             <button type="submit" title="Удалить роль">
+                                                                 <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                     <line x1="18" y1="6" x2="6" y2="18"/>
+                                                                     <line x1="6" y1="6" x2="18" y2="18"/>
+                                                                 </svg>
+                                                             </button>
+                                                         </form>
+                                                     }
+                                                 </span>
+                                            }
+                                        }
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="actions-cell">
+                                        <button type="button" class="btn-sm btn-secondary role-btn" data-user-id="@user.Id" data-user-name="@user.FullName">
+                                            Добавить роль
+                                        </button>
+                                        @if (User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value != user.Id)
+                                        {
+                                            <form method="post" action="/admin/deleteuser" style="display: inline;" onsubmit="return confirm('Удалить пользователя?');">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="userId" value="@user.Id" />
+                                                <button type="submit" class="btn-sm btn-danger">Удалить</button>
+                                            </form>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div id="roleModal" class="modal-overlay">
+    <div class="modal-content">
+        <h3>Добавить роль</h3>
+        <p id="roleModalUserName"></p>
+        
+        <div class="role-select-list">
+            @if (availableRoles != null)
+            {
+                @foreach (var role in availableRoles)
+                {
+                    <form method="post" action="/admin/assignrole" style="margin: 0;">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="userId" class="role-user-id-input" />
+                        <input type="hidden" name="role" value="@role" />
+                        <div class="role-select-item">
+                            <span>@GetRoleName(role)</span>
+                            <button type="submit" class="btn-sm btn-primary">Добавить</button>
+                        </div>
+                    </form>
+                }
+            }
+        </div>
+        
+        <button onclick="closeRoleModal()" class="btn-sm btn-secondary" style="width: 100%;">Отмена</button>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.role-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var userId = this.dataset.userId;
+            var userName = this.dataset.userName;
+            document.getElementById('roleModalUserName').textContent = userName;
+            
+            document.querySelectorAll('.role-user-id-input').forEach(function(input) {
+                input.value = userId;
+            });
+            
+            document.getElementById('roleModal').classList.add('active');
+        });
+    });
+    
+    function closeRoleModal() {
+        document.getElementById('roleModal').classList.remove('active');
+    }
+    
+    document.getElementById('roleModal').addEventListener('click', function(e) {
+        if (e.target === this) closeRoleModal();
+    });
+</script>

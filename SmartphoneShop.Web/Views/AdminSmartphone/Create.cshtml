@@ -1,0 +1,230 @@
+@model SmartphoneShop.Web.Models.SmartphoneFormViewModel
+@{
+    ViewData["Title"] = "Добавить товар";
+}
+
+<style>
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+    
+    .form-group {
+        margin-bottom: 16px;
+    }
+    
+    .form-label {
+        display: block;
+        margin-bottom: 6px;
+        color: #888;
+        font-size: 13px;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 10px 14px;
+        background: #2c2c2c;
+        border: 1px solid #3a3a3a;
+        border-radius: 8px;
+        color: #f0f0f0;
+        font-size: 14px;
+        transition: border-color 0.2s;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #D44177;
+    }
+    
+    textarea.form-control {
+        resize: vertical;
+        min-height: 100px;
+    }
+    
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .checkbox-group input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: #D44177;
+    }
+    
+    .checkbox-group label {
+        color: #f0f0f0;
+        font-size: 14px;
+    }
+</style>
+
+<section>
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h2 class="section-title" style="margin: 0;">Добавить товар</h2>
+        </div>
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div style="padding: 15px; margin-bottom: 20px; background: rgba(231,76,60,0.1); border: 1px solid #e74c3c; border-radius: 8px; color: #e74c3c;">
+                <ul style="margin: 0; padding-left: 20px;">
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <li>@error.ErrorMessage</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <div style="background: #1a1a1a; border: 1px solid #2c2c2c; border-radius: 12px; padding: 30px; max-width: 800px;">
+            <form method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Бренд *</label>
+                        <input type="text" name="Brand" class="form-control" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Модель *</label>
+                        <input type="text" name="ModelName" class="form-control" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Цена *</label>
+                        <input type="number" name="Price" class="form-control" step="0.01" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Старая цена</label>
+                        <input type="number" name="OldPrice" class="form-control" step="0.01" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">RAM (ГБ)</label>
+                        <input type="number" name="RAM" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Хранилище (ГБ)</label>
+                        <input type="number" name="Storage" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Диагональ экрана</label>
+                        <input type="number" name="ScreenSize" class="form-control" step="0.1" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Разрешение экрана</label>
+                        <input type="text" name="ScreenResolution" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Тип экрана</label>
+                        <input type="text" name="ScreenType" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Ёмкость батареи (мАч)</label>
+                        <input type="number" name="BatteryCapacity" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Процессор</label>
+                        <input type="text" name="Processor" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Основная камера</label>
+                        <input type="text" name="MainCamera" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Фронтальная камера</label>
+                        <input type="text" name="FrontCamera" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">ОС</label>
+                        <input type="text" name="OS" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Фото товара (можно выбрать несколько)</label>
+                        <input type="file" name="ImageFiles" multiple accept="image/*" class="form-control" onchange="previewPhotos(this)" />
+                        <div class="photo-preview-container" id="photoPreview"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Вес (г)</label>
+                        <input type="number" name="Weight" class="form-control" step="0.1" />
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 20px;">
+                    <label class="form-label">Описание</label>
+                    <textarea name="Description" class="form-control" rows="4"></textarea>
+                </div>
+
+                <div style="display: flex; gap: 20px; margin-top: 20px;">
+                    <div class="checkbox-group">
+                        <input type="checkbox" name="IsInStock" id="IsInStock" value="true" checked />
+                        <input type="hidden" name="IsInStock" value="false" />
+                        <label for="IsInStock">В наличии</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" name="IsFeatured" id="IsFeatured" value="true" />
+                        <input type="hidden" name="IsFeatured" value="false" />
+                        <label for="IsFeatured">Рекомендуемый</label>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 30px;">
+                    <button type="submit" class="cta-button">Сохранить</button>
+                    <a href="/adminsmartphone" class="cta-button" style="background: #2c2c2c; text-decoration: none;">Отмена</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        var selectedFiles = [];
+
+        function previewPhotos(input) {
+            if (input.files) {
+                Array.from(input.files).forEach(function(file) {
+                    selectedFiles.push(file);
+                });
+            }
+            input.value = '';
+            renderPreviews();
+        }
+
+        function removePhoto(index) {
+            selectedFiles.splice(index, 1);
+            renderPreviews();
+        }
+
+        function renderPreviews() {
+            var container = document.getElementById('photoPreview');
+            container.innerHTML = '';
+            selectedFiles.forEach(function(file, index) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var div = document.createElement('div');
+                    div.className = 'photo-preview-item';
+                    var img = document.createElement('img');
+                    img.src = e.target.result;
+                    var btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'remove-photo';
+                    btn.textContent = '×';
+                    btn.onclick = function() { removePhoto(index); };
+                    div.appendChild(img);
+                    div.appendChild(btn);
+                    container.appendChild(div);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        document.querySelector('form').addEventListener('submit', function() {
+            var dt = new DataTransfer();
+            selectedFiles.forEach(function(file) {
+                dt.items.add(file);
+            });
+            var input = document.querySelector('[name="ImageFiles"]');
+            if (input) input.files = dt.files;
+        });
+    </script>
+}

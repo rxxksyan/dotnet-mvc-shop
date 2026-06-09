@@ -1,0 +1,103 @@
+@model SmartphoneShop.Core.Entities.Cart
+@{
+    ViewData["Title"] = "Оформление заказа";
+    var isBuyNow = ViewBag.IsBuyNow == true;
+    var buyNowItem = ViewBag.BuyNowItem as SmartphoneShop.Web.Controllers.CartItemModel;
+}
+
+<section>
+    <div class="container">
+        <h2 class="section-title">Оформление заказа</h2>
+        
+        <div class="checkout-layout">
+            <div class="checkout-items">
+                <h3>Состав заказа</h3>
+                <div class="checkout-items-list">
+                    @if (isBuyNow && buyNowItem != null)
+                    {
+                        <div class="checkout-item">
+                            <div class="checkout-item-info">
+                                <div class="checkout-item-image">
+                                    @if (!string.IsNullOrEmpty(buyNowItem.ImageUrl))
+                                    {
+                                        <img src="@buyNowItem.ImageUrl" alt="@buyNowItem.ModelName" />
+                                    }
+                                    else
+                                    {
+                                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#D44177" stroke-width="1.5">
+                                            <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                                            <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                                        </svg>
+                                    }
+                                </div>
+                                <div>
+                                    <h4>@buyNowItem.ModelName</h4>
+                                    <p>1 шт. × @buyNowItem.Price.ToString("N0") BYN</p>
+                                </div>
+                            </div>
+                            <p class="checkout-item-price">@buyNowItem.Price.ToString("N0") BYN</p>
+                        </div>
+                    }
+                    else if (Model != null)
+                    {
+                        @foreach (var item in Model.Items)
+                        {
+                            <div class="checkout-item">
+                                <div class="checkout-item-info">
+                                    <div class="checkout-item-image">
+                                        @if (!string.IsNullOrEmpty(item.Smartphone.ImageUrl))
+                                        {
+                                            <img src="@item.Smartphone.ImageUrl" alt="@item.Smartphone.ModelName" />
+                                        }
+                                        else
+                                        {
+                                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#D44177" stroke-width="1.5">
+                                                <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                                                <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                                            </svg>
+                                        }
+                                    </div>
+                                    <div>
+                                        <h4>@item.Smartphone.ModelName</h4>
+                                        <p>@item.Quantity шт. × @item.Smartphone.Price.ToString("N0") BYN</p>
+                                    </div>
+                                </div>
+                                <p class="checkout-item-price">@((item.Smartphone.Price * item.Quantity).ToString("N0")) BYN</p>
+                            </div>
+                        }
+                    }
+                </div>
+                <div class="checkout-total">
+                    <h3>Итого: <span>@(isBuyNow && buyNowItem != null ? buyNowItem.Price.ToString("N0") : (Model?.TotalAmount.ToString("N0") ?? "0")) BYN</span></h3>
+                </div>
+            </div>
+            
+            <div class="contact-form">
+                <h3>Данные доставки</h3>
+                <form method="post" action="/order/create">
+                    <div class="form-group">
+                        <label>ФИО получателя</label>
+                        <input type="text" name="contactName" required placeholder="Иван Иванов" value="@ViewBag.UserFullName" />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Телефон</label>
+                        <input type="tel" name="contactPhone" required placeholder="+375 (29) 123-45-67" value="@ViewBag.UserPhone" />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Адрес доставки</label>
+                        <textarea name="deliveryAddress" required placeholder="г. Минск, ул. Примерная, д. 1, кв. 1" rows="3">@ViewBag.UserAddress</textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Комментарий к заказу</label>
+                        <textarea name="notes" placeholder="Ваши пожелания" rows="2"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="cta-button" style="width: 100%; margin-top: 20px;">Подтвердить заказ</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>

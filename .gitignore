@@ -1,0 +1,40 @@
+# .NET Build output
+**/[Bb]in/
+**/[Oo]bj/
+
+# Visual Studio / IDE files
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+.vscode/
+.idea/
+*.sln.iml
+
+# Launch settings (machine-specific)
+Properties/launchSettings.json
+
+# Local app settings overrides
+appsettings.*.local.json
+
+# Log files
+logs/
+**/logs/
+*.log
+
+# Backup files
+*.bak
+*.orig
+*~
+
+# Tooling / IDE config
+.mcp.json
+
+# OS files
+Thumbs.db
+.DS_Store
+Desktop.ini
+
+# User-uploaded content
+wwwroot/uploads/

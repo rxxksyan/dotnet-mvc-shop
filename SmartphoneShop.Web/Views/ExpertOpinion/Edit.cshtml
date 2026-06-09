@@ -1,0 +1,61 @@
+@model SmartphoneShop.Core.Entities.ExpertOpinion
+
+@{
+    ViewData["Title"] = "Редактирование мнения";
+}
+
+<section class="catalog-section" style="padding: 40px 20px; min-height: 80vh;">
+    <div class="catalog-container" style="max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #f0f0f0; text-align: center; margin-bottom: 30px;">Редактирование мнения</h2>
+
+        <form asp-action="Edit" method="post" style="background: #2c2c2c; padding: 30px; border-radius: 12px; border: 1px solid #3a3a3a;">
+            <input type="hidden" name="id" value="@Model.Id" />
+            @Html.AntiForgeryToken()
+
+            <div style="margin-bottom: 20px;">
+                <label for="text" style="display: block; color: #f0f0f0; margin-bottom: 8px; font-weight: 500;">Текст мнения</label>
+                <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                    <button type="button" onclick="formatText('bold')" style="padding: 6px 12px; background: #3a3a3a; color: #f0f0f0; border: 1px solid #555; border-radius: 4px; cursor: pointer; font-weight: bold;">B</button>
+                    <button type="button" onclick="formatText('italic')" style="padding: 6px 12px; background: #3a3a3a; color: #f0f0f0; border: 1px solid #555; border-radius: 4px; cursor: pointer; font-style: italic;">I</button>
+                    <button type="button" onclick="formatText('strike')" style="padding: 6px 12px; background: #3a3a3a; color: #f0f0f0; border: 1px solid #555; border-radius: 4px; cursor: pointer; text-decoration: line-through;">S</button>
+                </div>
+                <textarea id="opinionText" name="text" style="width: 100%; padding: 12px; background: #1a1a1a; border: 1px solid #3a3a3a; border-radius: 8px; color: #f0f0f0; font-size: 14px; min-height: 120px; resize: vertical;" required>@Model.Text</textarea>
+            </div>
+
+            <div style="margin-bottom: 30px;">
+                <label for="videoUrl" style="display: block; color: #f0f0f0; margin-bottom: 8px; font-weight: 500;">Ссылка на видео (необязательно)</label>
+                <input type="url" name="videoUrl" style="width: 100%; padding: 12px; background: #1a1a1a; border: 1px solid #3a3a3a; border-radius: 8px; color: #f0f0f0; font-size: 14px;" value="@Model.VideoUrl" />
+            </div>
+
+            <div style="display: flex; gap: 15px;">
+                <button type="submit" style="padding: 12px 30px; background: #D44177; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500;">Сохранить</button>
+                <a href="@Url.Action("Index", "Comparison")" style="padding: 12px 30px; background: #3a3a3a; color: #f0f0f0; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 500; display: flex; align-items: center;">Отмена</a>
+            </div>
+        </form>
+    </div>
+</section>
+
+<script>
+function formatText(command) {
+    const textarea = document.getElementById('opinionText');
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = textarea.value.substring(start, end);
+    let wrapped = selectedText;
+
+    switch(command) {
+        case 'bold':
+            wrapped = '**' + selectedText + '**';
+            break;
+        case 'italic':
+            wrapped = '*' + selectedText + '*';
+            break;
+        case 'strike':
+            wrapped = '~~' + selectedText + '~~';
+            break;
+    }
+
+    textarea.setRangeText(wrapped, start, end, 'end');
+    textarea.focus();
+}
+</script>
