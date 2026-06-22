@@ -12,8 +12,6 @@ ASP.NET Core MVC интернет-магазин смартфонов.
 ![Serilog](https://img.shields.io/badge/Serilog-FF7019?logoColor=fff)
 ![SkiaSharp](https://img.shields.io/badge/SkiaSharp-29B6F6?logoColor=fff)
 ![OpenXml](https://img.shields.io/badge/OpenXml-217346?logo=microsoft-excel&logoColor=fff)
-![Bootstrap 5](https://img.shields.io/badge/Bootstrap%205-7952B3?logo=bootstrap&logoColor=fff)
-![jQuery](https://img.shields.io/badge/jQuery-0769AD?logo=jquery&logoColor=fff)
 
 </div>
 
@@ -40,7 +38,7 @@ ASP.NET Core MVC интернет-магазин смартфонов.
 Backend      ── .NET 9 · ASP.NET Core MVC · C# · EF Core 8 · Pomelo MySQL
 Auth/Logging ── Identity · Serilog
 Reporting    ── SkiaSharp · OpenXml · X.PagedList
-Frontend     ── Bootstrap 5 · jQuery · Razor Views
+Frontend     ── Vanilla CSS · Vanilla JS · Razor Views
 ```
 
 ## Архитектура
@@ -96,14 +94,16 @@ SmartphoneShop.sln
 
 ### Установка
 
+**Требования:** .NET 9 SDK, MySQL 8+ (XAMPP / Docker / сервер)
+
 ```bash
 git clone https://github.com/rxxksyan/dotnet-mvc-shop.git
 cd dotnet-mvc-shop
 dotnet run -p SmartphoneShop.Web
 ```
 
-База данных создаётся автоматически при первом запуске (миграции применяются в `SeedData.cs`).
-Строка подключения — `appsettings.json`:
+База данных и таблицы создаются автоматически при первом запуске (миграции + SeedData).
+Строка подключения — `appsettings.json` (отредактируй под свой MySQL):
 
 ```json
 {
@@ -115,8 +115,15 @@ dotnet run -p SmartphoneShop.Web
 
 ### Учётные записи по умолчанию
 
-| Роль | Email | Пароль |
-|---|---|---|
-| **Администратор** | `admin@smartshop.com` | `Admin123!` |
+Все пароли: `bmw850850`
 
-Остальные роли (Expert, ProductAdmin, RepairSpecialist) назначаются через админ-панель после входа.
+| Роль | Email | Описание |
+|---|---|---|
+| **Admin** | `admin@smartshop.com` | Полный доступ к админ-панели |
+| **User** | `testuser@test.com` | Обычный покупатель |
+| **ProductAdmin** | `prodadmin2@test.com` | Управление каталогом товаров |
+| **RepairSpecialist** | `repair@smartshop.com` | Управление заявками на ремонт |
+| **Expert** | `expert@smartshop.com` | Экспертные обзоры товаров |
+| **Народный эксперт** | `folk@smartshop.com` | Народные обзоры |
+
+> Сервер запускается на `http://localhost:5023` (см. `Properties/launchSettings.json`).

@@ -48,6 +48,11 @@ SmartphoneShop.FunctionalTests/
 SmartphoneShop.Tests/
 TESTS/
 
+# Vendor libraries (restored by template)
+wwwroot/lib/
+SmartphoneShop.Web/wwwroot/lib/
+**/*.map
+
 # User-uploaded content
 wwwroot/uploads/*
 SmartphoneShop.Web/wwwroot/uploads/*
