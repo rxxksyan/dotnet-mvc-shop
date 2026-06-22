@@ -92,14 +92,18 @@ SmartphoneShop.sln
 - .NET 9 SDK
 - MySQL 8+ (XAMPP / Docker / сервер)
 
-### Установка
-
-**Требования:** .NET 9 SDK, MySQL 8+ (XAMPP / Docker / сервер)
+### Быстрый старт
 
 ```bash
+# 1. Клонировать
 git clone https://github.com/rxxksyan/dotnet-mvc-shop.git
 cd dotnet-mvc-shop
-dotnet run -p SmartphoneShop.Web
+
+# 2. (Опционально) Поправить строку подключения к MySQL
+#    отредактировать SmartphoneShop.Web/appsettings.json
+
+# 3. Собрать и запустить
+dotnet run --project SmartphoneShop.Web
 ```
 
 База данных и таблицы создаются автоматически при первом запуске (миграции + SeedData).
