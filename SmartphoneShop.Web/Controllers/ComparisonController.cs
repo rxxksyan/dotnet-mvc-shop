@@ -82,6 +82,7 @@ public class ComparisonController : Controller
 
     [HttpPost]
     [IgnoreAntiforgeryToken]
+    [Route("/comparison/toggle")]
     public async Task<IActionResult> RemoveBySmartphoneId(int smartphoneId)
     {
         try
@@ -91,12 +92,12 @@ public class ComparisonController : Controller
 
             _logger.LogInformation("Removing smartphone {SmartphoneId} from comparison list {ListId}", smartphoneId, list.Id);
             await _comparisonRepo.RemoveItemBySmartphoneIdAsync(list.Id, smartphoneId);
-            return Ok();
+            return Ok(new { success = true });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error removing from comparison");
-            return BadRequest();
+            return BadRequest(new { success = false, message = "Ошибка при удалении из сравнения" });
         }
     }
 

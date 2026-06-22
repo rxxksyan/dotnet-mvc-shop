@@ -4,7 +4,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] — rxxMRKT</title>
-    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/site.css?v=3" />
+    <meta name="csrf-token" content="@(Context.RequestServices.GetService(typeof(Microsoft.AspNetCore.Antiforgery.IAntiforgery)) is Microsoft.AspNetCore.Antiforgery.IAntiforgery af ? af.GetAndStoreTokens(Context).RequestToken : "")" />
 </head>
 <body>
     <header>
@@ -26,7 +27,7 @@
                         @if (User.Identity?.IsAuthenticated == true)
                         {
                             <li><a href="/favorites">Избранное</a></li>
-                            @if (User.IsInRole("Admin") || User.IsInRole("ProductAdmin") || User.IsInRole("RepairSpecialist") || User.IsInRole("Expert"))
+                            @if (User.IsInRole("Admin") || User.IsInRole("ProductAdmin") || User.IsInRole("RepairSpecialist"))
                             {
                                 <li><a href="/admin">Админка</a></li>
                             }
@@ -62,7 +63,7 @@
         </div>
     </footer>
 
-    <script src="~/js/site.js"></script>
+    <script src="~/js/site.js?v=3"></script>
     <script>
         function toggleMenu() {
             document.getElementById('mobileNav').classList.toggle('open');

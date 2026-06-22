@@ -36,5 +36,18 @@ Thumbs.db
 .DS_Store
 Desktop.ini
 
+# Junk / temp files
+server.err
+dotnet
+xd.txt
+акки.txt
+8.0.0)
+
+# Test projects (not for production repo)
+SmartphoneShop.FunctionalTests/
+SmartphoneShop.Tests/
+TESTS/
+
 # User-uploaded content
-wwwroot/uploads/
+wwwroot/uploads/*
+SmartphoneShop.Web/wwwroot/uploads/*

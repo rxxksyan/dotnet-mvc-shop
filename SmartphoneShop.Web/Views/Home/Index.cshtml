@@ -24,6 +24,10 @@
                             <div class="out-of-stock-overlay"></div>
                             <span class="out-of-stock-badge">Нет в наличии</span>
                         }
+                        @if (phone.OldPrice > 0 && phone.OldPrice != phone.Price)
+                        {
+                            <span style="position: absolute; top: 8px; right: 8px; background: #D44177; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; z-index: 5;">-@((int)((1m - phone.Price / phone.OldPrice.Value) * 100m))%</span>
+                        }
                         @if (!string.IsNullOrEmpty(phone.ImageUrl))
                         {
                             <img src="@phone.ImageUrl" alt="@phone.ModelName" />
@@ -74,19 +78,4 @@
     </div>
 </section>
 
-@section Scripts {
-    <script>
-        function addToComparison(id, btn) {
-            fetch('/comparison/add?smartphoneId=' + id, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-                .then(r => r.json())
-                .then(d => {
-                    btn.classList.add('in-comparison');
-                    btn.style.background = '#D44177';
-                    if (d.count >= 2) {
-                        setTimeout(function () { window.location.href = '/comparison'; }, 300);
-                    }
-                })
-                .catch(e => console.error(e));
-        }
-    </script>
-}
+

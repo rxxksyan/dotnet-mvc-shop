@@ -1,4 +1,4 @@
-@model IEnumerable<SmartphoneShop.Core.Entities.AppUser>
+@model X.PagedList.IPagedList<SmartphoneShop.Core.Entities.AppUser>
 @{
     ViewData["Title"] = "Управление пользователями";
     var userRoles = ViewBag.UserRoles as Dictionary<string, IList<string>>;
@@ -185,9 +185,20 @@
 
 <section>
     <div class="container">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <h2 class="section-title" style="margin: 0;">Управление пользователями</h2>
         </div>
+
+        <form method="get" action="/admin/users" style="margin-bottom: 20px;">
+            <div style="display: flex; gap: 10px; max-width: 400px;">
+                <input type="text" name="search" value="@ViewBag.Search" placeholder="Поиск по имени или email..." style="flex: 1; padding: 10px 14px; background: #2c2c2c; border: 1px solid #3a3a3a; border-radius: 8px; color: #f0f0f0; font-size: 14px; outline: none;" />
+                <button type="submit" style="padding: 10px 20px; background: #D44177; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 14px;">Найти</button>
+                @if (!string.IsNullOrEmpty(ViewBag.Search))
+                {
+                    <a href="/admin/users" style="padding: 10px 20px; background: #2c2c2c; color: #f0f0f0; border: 1px solid #3a3a3a; border-radius: 8px; text-decoration: none; font-size: 14px;">Сбросить</a>
+                }
+            </div>
+        </form>
 
         @if (TempData["Message"] != null)
         {
@@ -300,6 +311,35 @@
         <button onclick="closeRoleModal()" class="btn-sm btn-secondary" style="width: 100%;">Отмена</button>
     </div>
 </div>
+
+@if (Model.PageCount > 1)
+{
+    <div class="pagination" style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 20px; padding: 16px 0;">
+        @if (Model.HasPreviousPage)
+        {
+            <a href="@Url.Action("Users", new { search = ViewBag.Search, page = Model.PageNumber - 1, pageSize = Model.PageSize })" class="page-link" style="padding: 8px 16px; background: #2c2c2c; color: #f0f0f0; border-radius: 6px; text-decoration: none; font-size: 14px;">← Назад</a>
+        }
+
+        @for (int i = 1; i <= Model.PageCount; i++)
+        {
+            if (i == Model.PageNumber)
+            {
+                <span style="padding: 8px 12px; background: #D44177; color: #fff; border-radius: 6px; font-size: 14px; font-weight: 600;">@i</span>
+            }
+            else
+            {
+                <a href="@Url.Action("Users", new { search = ViewBag.Search, page = i, pageSize = Model.PageSize })" class="page-link" style="padding: 8px 12px; background: #2c2c2c; color: #f0f0f0; border-radius: 6px; text-decoration: none; font-size: 14px;">@i</a>
+            }
+        }
+
+        @if (Model.HasNextPage)
+        {
+            <a href="@Url.Action("Users", new { search = ViewBag.Search, page = Model.PageNumber + 1, pageSize = Model.PageSize })" class="page-link" style="padding: 8px 16px; background: #2c2c2c; color: #f0f0f0; border-radius: 6px; text-decoration: none; font-size: 14px;">Вперёд →</a>
+        }
+
+        <span style="color: #888; font-size: 13px; margin-left: 10px;">Страница @Model.PageNumber из @Model.PageCount | Всего: @Model.TotalItemCount</span>
+    </div>
+}
 
 <script>
     document.querySelectorAll('.role-btn').forEach(function(btn) {

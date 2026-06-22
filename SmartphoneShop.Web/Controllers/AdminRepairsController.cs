@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SmartphoneShop.Core.Entities;
 using SmartphoneShop.Core.Enums;
 using SmartphoneShop.Infrastructure.Data;
 using X.PagedList;
@@ -11,17 +13,20 @@ namespace SmartphoneShop.Web.Controllers;
 public class AdminRepairsController : Controller
 {
     private readonly AppDbContext _context;
+    private readonly UserManager<AppUser> _userManager;
 
-    public AdminRepairsController(AppDbContext context)
+    public AdminRepairsController(AppDbContext context, UserManager<AppUser> userManager)
     {
         _context = context;
+        _userManager = userManager;
     }
 
-    public async Task<IActionResult> Index(string? status, int page = 1, int pageSize = 10)
+    public async Task<IActionResult> Index(string? status, string? search, int page = 1, int pageSize = 10)
     {
         page = Math.Max(1, page);
         var query = _context.RepairRequests
             .Include(r => r.User)
+            .Include(r => r.MasterUser)
             .AsQueryable();
 
         if (!string.IsNullOrEmpty(status))
@@ -32,11 +37,20 @@ public class AdminRepairsController : Controller
             }
         }
 
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var lowerSearch = search.ToLower();
+            query = query.Where(r => r.SmartphoneModel.ToLower().Contains(lowerSearch) ||
+                                     r.IssueDescription.ToLower().Contains(lowerSearch) ||
+                                     r.User.FullName.ToLower().Contains(lowerSearch));
+        }
+
         var repairs = await query
             .OrderByDescending(r => r.CreatedAt)
             .ToPagedListAsync(page, pageSize);
 
         ViewBag.Status = status;
+        ViewBag.Search = search;
         ViewBag.RepairStatuses = Enum.GetValues<RepairStatus>();
         return View(repairs);
     }
@@ -45,6 +59,7 @@ public class AdminRepairsController : Controller
     {
         var repair = await _context.RepairRequests
             .Include(r => r.User)
+            .Include(r => r.MasterUser)
             .FirstOrDefaultAsync(r => r.Id == id);
         
         if (repair == null)
@@ -128,6 +143,16 @@ public class AdminRepairsController : Controller
         {
             TempData["Error"] = "Нельзя перескакивать через статус. Переходите только к следующему по порядку.";
             return RedirectToAction(nameof(Index));
+        }
+
+        // Auto-assign master if not yet assigned
+        if (string.IsNullOrEmpty(repair.MasterUserId))
+        {
+            var currentUserId = _userManager.GetUserId(User);
+            if (!string.IsNullOrEmpty(currentUserId))
+            {
+                repair.MasterUserId = currentUserId;
+            }
         }
 
         repair.Status = status;

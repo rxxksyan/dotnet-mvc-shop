@@ -21,12 +21,23 @@ public class AdminSmartphoneController : Controller
         _context = context;
     }
 
-    public async Task<IActionResult> Index(int page = 1, int pageSize = 10)
+    public async Task<IActionResult> Index(string? search, int page = 1, int pageSize = 10)
     {
         page = Math.Max(1, page);
-        var smartphones = await _context.Smartphones
+        var query = _context.Smartphones.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var lowerSearch = search.ToLower();
+            query = query.Where(s => s.ModelName.ToLower().Contains(lowerSearch) ||
+                                     s.Brand.ToLower().Contains(lowerSearch));
+        }
+
+        var smartphones = await query
             .OrderByDescending(s => s.CreatedAt)
             .ToPagedListAsync(page, pageSize);
+
+        ViewBag.Search = search;
         return View(smartphones);
     }
 

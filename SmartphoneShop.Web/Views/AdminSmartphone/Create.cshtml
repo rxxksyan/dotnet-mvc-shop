@@ -178,53 +178,23 @@
 
 @section Scripts {
     <script>
-        var selectedFiles = [];
-
         function previewPhotos(input) {
-            if (input.files) {
-                Array.from(input.files).forEach(function(file) {
-                    selectedFiles.push(file);
-                });
-            }
-            input.value = '';
-            renderPreviews();
-        }
-
-        function removePhoto(index) {
-            selectedFiles.splice(index, 1);
-            renderPreviews();
-        }
-
-        function renderPreviews() {
             var container = document.getElementById('photoPreview');
             container.innerHTML = '';
-            selectedFiles.forEach(function(file, index) {
-                var reader = new FileReader();
-                reader.onload = function(e) {
-                    var div = document.createElement('div');
-                    div.className = 'photo-preview-item';
-                    var img = document.createElement('img');
-                    img.src = e.target.result;
-                    var btn = document.createElement('button');
-                    btn.type = 'button';
-                    btn.className = 'remove-photo';
-                    btn.textContent = '×';
-                    btn.onclick = function() { removePhoto(index); };
-                    div.appendChild(img);
-                    div.appendChild(btn);
-                    container.appendChild(div);
-                };
-                reader.readAsDataURL(file);
-            });
+            if (input.files) {
+                Array.from(input.files).forEach(function(file) {
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        var div = document.createElement('div');
+                        div.className = 'photo-preview-item';
+                        var img = document.createElement('img');
+                        img.src = e.target.result;
+                        div.appendChild(img);
+                        container.appendChild(div);
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
         }
-
-        document.querySelector('form').addEventListener('submit', function() {
-            var dt = new DataTransfer();
-            selectedFiles.forEach(function(file) {
-                dt.items.add(file);
-            });
-            var input = document.querySelector('[name="ImageFiles"]');
-            if (input) input.files = dt.files;
-        });
     </script>
 }

@@ -16,5 +16,7 @@ public class RepairRequest
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
+    public string? MasterUserId { get; set; }
+    public virtual AppUser? MasterUser { get; set; }
     public virtual AppUser User { get; set; } = null!;
 }

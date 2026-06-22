@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using SmartphoneShop.Core.Interfaces;
+using SmartphoneShop.Web.Models;
 using Microsoft.AspNetCore.Identity;
 using System.Collections.Generic;
 
@@ -68,4 +69,10 @@ public class HomeController : Controller
     }
 
     public IActionResult Privacy() => View();
+
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+    public IActionResult Error(int? statusCode)
+    {
+        return View(new ErrorViewModel { RequestId = System.Diagnostics.Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+    }
 }

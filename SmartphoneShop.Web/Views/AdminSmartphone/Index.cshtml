@@ -98,10 +98,21 @@
 
 <section>
     <div class="container">
-        <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 30px; flex-wrap: wrap;">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 20px; flex-wrap: wrap;">
             <h2 class="section-title" style="margin: 0;">Управление товарами</h2>
             <a href="/adminsmartphone/create" class="cta-button" style="flex-shrink: 0;">Добавить товар</a>
         </div>
+
+        <form method="get" action="/adminsmartphone" style="margin-bottom: 20px;">
+            <div style="display: flex; gap: 10px; max-width: 400px;">
+                <input type="text" name="search" value="@ViewBag.Search" placeholder="Поиск по модели или бренду..." style="flex: 1; padding: 10px 14px; background: #2c2c2c; border: 1px solid #3a3a3a; border-radius: 8px; color: #f0f0f0; font-size: 14px; outline: none;" />
+                <button type="submit" style="padding: 10px 20px; background: #D44177; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 14px;">Найти</button>
+                @if (!string.IsNullOrEmpty(ViewBag.Search))
+                {
+                    <a href="/adminsmartphone" style="padding: 10px 20px; background: #2c2c2c; color: #f0f0f0; border: 1px solid #3a3a3a; border-radius: 8px; text-decoration: none; font-size: 14px;">Сбросить</a>
+                }
+            </div>
+        </form>
 
         @if (TempData["Message"] != null)
         {
@@ -179,7 +190,7 @@
             <div class="pagination" style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 20px; padding: 16px 0;">
                 @if (Model.HasPreviousPage)
                 {
-                    <a href="@Url.Action("Index", new { page = Model.PageNumber - 1, pageSize = Model.PageSize })" class="page-link" style="padding: 8px 16px; background: #2c2c2c; color: #f0f0f0; border-radius: 6px; text-decoration: none; font-size: 14px;">← Назад</a>
+                    <a href="@Url.Action("Index", new { search = ViewBag.Search, page = Model.PageNumber - 1, pageSize = Model.PageSize })" class="page-link" style="padding: 8px 16px; background: #2c2c2c; color: #f0f0f0; border-radius: 6px; text-decoration: none; font-size: 14px;">← Назад</a>
                 }
 
                 @for (int i = 1; i <= Model.PageCount; i++)
@@ -190,13 +201,13 @@
                     }
                     else
                     {
-                        <a href="@Url.Action("Index", new { page = i, pageSize = Model.PageSize })" class="page-link" style="padding: 8px 12px; background: #2c2c2c; color: #f0f0f0; border-radius: 6px; text-decoration: none; font-size: 14px;">@i</a>
+                        <a href="@Url.Action("Index", new { search = ViewBag.Search, page = i, pageSize = Model.PageSize })" class="page-link" style="padding: 8px 12px; background: #2c2c2c; color: #f0f0f0; border-radius: 6px; text-decoration: none; font-size: 14px;">@i</a>
                     }
                 }
 
                 @if (Model.HasNextPage)
                 {
-                    <a href="@Url.Action("Index", new { page = Model.PageNumber + 1, pageSize = Model.PageSize })" class="page-link" style="padding: 8px 16px; background: #2c2c2c; color: #f0f0f0; border-radius: 6px; text-decoration: none; font-size: 14px;">Вперёд →</a>
+                    <a href="@Url.Action("Index", new { search = ViewBag.Search, page = Model.PageNumber + 1, pageSize = Model.PageSize })" class="page-link" style="padding: 8px 16px; background: #2c2c2c; color: #f0f0f0; border-radius: 6px; text-decoration: none; font-size: 14px;">Вперёд →</a>
                 }
             </div>
         }

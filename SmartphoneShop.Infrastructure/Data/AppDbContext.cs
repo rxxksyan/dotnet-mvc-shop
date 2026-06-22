@@ -134,7 +134,12 @@ public class AppDbContext : IdentityDbContext<AppUser>
                 .WithMany(u => u.RepairRequests)
                 .HasForeignKey(e => e.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.MasterUser)
+                .WithMany()
+                .HasForeignKey(e => e.MasterUserId)
+                .OnDelete(DeleteBehavior.SetNull);
             entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => e.MasterUserId);
             entity.HasIndex(e => e.Status);
         });
 

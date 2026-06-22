@@ -46,6 +46,7 @@
                                 <div class="cart-item-controls">
                                     <div class="quantity-controls">
                                         <form method="post" action="/cart/update" style="display: flex; align-items: center; gap: 8px;">
+                                            @Html.AntiForgeryToken()
                                             <input type="hidden" name="itemId" value="@item.Id" />
                                             <button type="submit" name="quantity" value="@(item.Quantity - 1)" class="qty-btn" @(item.Quantity <= 1 ? "disabled" : "")>−</button>
                                             <span class="qty-value">@item.Quantity</span>
@@ -54,6 +55,7 @@
                                     </div>
                                     <p class="item-total">@((item.Smartphone.Price * item.Quantity).ToString("N0")) BYN</p>
                                     <form method="post" action="/cart/remove">
+                                        @Html.AntiForgeryToken()
                                         <input type="hidden" name="itemId" value="@item.Id" />
                                         <button type="submit" class="remove-btn">
                                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -76,6 +78,7 @@
                         <div class="summary-actions">
                             <a href="/order/checkout" class="cta-button">Оформить заказ</a>
                             <form method="post" action="/cart/clear">
+                                @Html.AntiForgeryToken()
                                 <button type="submit" class="cta-button" style="background: #3a3a3a;">Очистить корзину</button>
                             </form>
                         </div>

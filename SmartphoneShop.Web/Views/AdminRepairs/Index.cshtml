@@ -131,22 +131,34 @@
 
 <section>
     <div class="container">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <h2 class="section-title" style="margin: 0;">Заявки на ремонт</h2>
         </div>
 
+        <form method="get" action="/adminrepairs" style="margin-bottom: 20px;">
+            <div style="display: flex; gap: 10px; max-width: 500px;">
+                <input type="text" name="search" value="@ViewBag.Search" placeholder="Поиск по модели, проблеме или клиенту..." style="flex: 1; padding: 10px 14px; background: #2c2c2c; border: 1px solid #3a3a3a; border-radius: 8px; color: #f0f0f0; font-size: 14px; outline: none;" />
+                <input type="hidden" name="status" value="@ViewBag.Status" />
+                <button type="submit" style="padding: 10px 20px; background: #D44177; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 14px;">Найти</button>
+                @if (!string.IsNullOrEmpty(ViewBag.Search))
+                {
+                    <a href="/adminrepairs" style="padding: 10px 20px; background: #2c2c2c; color: #f0f0f0; border: 1px solid #3a3a3a; border-radius: 8px; text-decoration: none; font-size: 14px;">Сбросить</a>
+                }
+            </div>
+        </form>
+
         <div class="filter-bar">
-            <a href="/adminrepairs" class="filter-link @(ViewBag.Status == null ? "active" : "")">Все</a>
-            <a href="/adminrepairs?status=New" class="filter-link @(ViewBag.Status == "New" ? "active" : "")">Новые</a>
-            <a href="/adminrepairs?status=DeliveryToCenter" class="filter-link @(ViewBag.Status == "DeliveryToCenter" ? "active" : "")">Доставка в центр</a>
-            <a href="/adminrepairs?status=AcceptedAtCenter" class="filter-link @(ViewBag.Status == "AcceptedAtCenter" ? "active" : "")">Принят в центр</a>
-            <a href="/adminrepairs?status=InQueue" class="filter-link @(ViewBag.Status == "InQueue" ? "active" : "")">В очереди</a>
-            <a href="/adminrepairs?status=Diagnostics" class="filter-link @(ViewBag.Status == "Diagnostics" ? "active" : "")">Диагностика</a>
-            <a href="/adminrepairs?status=RepairApproval" class="filter-link @(ViewBag.Status == "RepairApproval" ? "active" : "")">Ожидает одобрения</a>
-            <a href="/adminrepairs?status=InRepair" class="filter-link @(ViewBag.Status == "InRepair" ? "active" : "")">В ремонте</a>
-            <a href="/adminrepairs?status=ReadyForPickup" class="filter-link @(ViewBag.Status == "ReadyForPickup" ? "active" : "")">Готов к выдаче</a>
-            <a href="/adminrepairs?status=Completed" class="filter-link @(ViewBag.Status == "Completed" ? "active" : "")">Завершённые</a>
-            <a href="/adminrepairs?status=Cancelled" class="filter-link @(ViewBag.Status == "Cancelled" ? "active" : "")">Отменённые</a>
+            <a href="/adminrepairs?search=@ViewBag.Search" class="filter-link @(ViewBag.Status == null ? "active" : "")">Все</a>
+            <a href="/adminrepairs?search=@ViewBag.Search&status=New" class="filter-link @(ViewBag.Status == "New" ? "active" : "")">Новые</a>
+            <a href="/adminrepairs?search=@ViewBag.Search&status=DeliveryToCenter" class="filter-link @(ViewBag.Status == "DeliveryToCenter" ? "active" : "")">Доставка в центр</a>
+            <a href="/adminrepairs?search=@ViewBag.Search&status=AcceptedAtCenter" class="filter-link @(ViewBag.Status == "AcceptedAtCenter" ? "active" : "")">Принят в центр</a>
+            <a href="/adminrepairs?search=@ViewBag.Search&status=InQueue" class="filter-link @(ViewBag.Status == "InQueue" ? "active" : "")">В очереди</a>
+            <a href="/adminrepairs?search=@ViewBag.Search&status=Diagnostics" class="filter-link @(ViewBag.Status == "Diagnostics" ? "active" : "")">Диагностика</a>
+            <a href="/adminrepairs?search=@ViewBag.Search&status=RepairApproval" class="filter-link @(ViewBag.Status == "RepairApproval" ? "active" : "")">Ожидает одобрения</a>
+            <a href="/adminrepairs?search=@ViewBag.Search&status=InRepair" class="filter-link @(ViewBag.Status == "InRepair" ? "active" : "")">В ремонте</a>
+            <a href="/adminrepairs?search=@ViewBag.Search&status=ReadyForPickup" class="filter-link @(ViewBag.Status == "ReadyForPickup" ? "active" : "")">Готов к выдаче</a>
+            <a href="/adminrepairs?search=@ViewBag.Search&status=Completed" class="filter-link @(ViewBag.Status == "Completed" ? "active" : "")">Завершённые</a>
+            <a href="/adminrepairs?search=@ViewBag.Search&status=Cancelled" class="filter-link @(ViewBag.Status == "Cancelled" ? "active" : "")">Отменённые</a>
         </div>
 
         <div class="card" style="padding: 0; background: #1a1a1a; border: 1px solid #2c2c2c; border-radius: 12px; overflow: hidden;">
@@ -158,6 +170,7 @@
                             <th>Пользователь</th>
                             <th>Устройство / Проблема</th>
                             <th>Дата</th>
+                            <th>Мастер</th>
                             <th>Статус</th>
                             <th>Цена</th>
                             <th>Решение клиента</th>
@@ -182,6 +195,7 @@
                                     }
                                 </td>
                                 <td>@repair.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                                <td>@(repair.MasterUser?.FullName ?? "—")</td>
                                 <td>
                                     @{
                                         var statusClass = repair.Status switch
@@ -422,7 +436,7 @@
     <div class="pagination" style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 20px; padding: 16px 0;">
         @if (Model.HasPreviousPage)
         {
-            <a href="@Url.Action("Index", new { status = ViewBag.Status, page = Model.PageNumber - 1, pageSize = Model.PageSize })" class="page-link" style="padding: 8px 16px; background: #2c2c2c; color: #f0f0f0; border-radius: 6px; text-decoration: none; font-size: 14px;">← Назад</a>
+            <a href="@Url.Action("Index", new { status = ViewBag.Status, search = ViewBag.Search, page = Model.PageNumber - 1, pageSize = Model.PageSize })" class="page-link" style="padding: 8px 16px; background: #2c2c2c; color: #f0f0f0; border-radius: 6px; text-decoration: none; font-size: 14px;">← Назад</a>
         }
 
         @for (int i = 1; i <= Model.PageCount; i++)
@@ -433,13 +447,13 @@
             }
             else
             {
-                <a href="@Url.Action("Index", new { status = ViewBag.Status, page = i, pageSize = Model.PageSize })" class="page-link" style="padding: 8px 12px; background: #2c2c2c; color: #f0f0f0; border-radius: 6px; text-decoration: none; font-size: 14px;">@i</a>
+                <a href="@Url.Action("Index", new { status = ViewBag.Status, search = ViewBag.Search, page = i, pageSize = Model.PageSize })" class="page-link" style="padding: 8px 12px; background: #2c2c2c; color: #f0f0f0; border-radius: 6px; text-decoration: none; font-size: 14px;">@i</a>
             }
         }
 
         @if (Model.HasNextPage)
         {
-            <a href="@Url.Action("Index", new { status = ViewBag.Status, page = Model.PageNumber + 1, pageSize = Model.PageSize })" class="page-link" style="padding: 8px 16px; background: #2c2c2c; color: #f0f0f0; border-radius: 6px; text-decoration: none; font-size: 14px;">Вперёд →</a>
+            <a href="@Url.Action("Index", new { status = ViewBag.Status, search = ViewBag.Search, page = Model.PageNumber + 1, pageSize = Model.PageSize })" class="page-link" style="padding: 8px 16px; background: #2c2c2c; color: #f0f0f0; border-radius: 6px; text-decoration: none; font-size: 14px;">Вперёд →</a>
         }
 
         <span style="color: #888; font-size: 13px; margin-left: 10px;">Страница @Model.PageNumber из @Model.PageCount | Всего: @Model.TotalItemCount</span>

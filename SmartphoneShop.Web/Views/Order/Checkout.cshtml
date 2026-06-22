@@ -75,6 +75,7 @@
             <div class="contact-form">
                 <h3>Данные доставки</h3>
                 <form method="post" action="/order/create">
+                    @Html.AntiForgeryToken()
                     <div class="form-group">
                         <label>ФИО получателя</label>
                         <input type="text" name="contactName" required placeholder="Иван Иванов" value="@ViewBag.UserFullName" />

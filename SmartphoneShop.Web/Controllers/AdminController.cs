@@ -4,10 +4,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SmartphoneShop.Core.Entities;
 using SmartphoneShop.Infrastructure.Data;
+using X.PagedList;
 
 namespace SmartphoneShop.Web.Controllers;
 
-[Authorize(Roles = "Admin,ProductAdmin,RepairSpecialist,Expert")]
+[Authorize(Roles = "Admin,ProductAdmin,RepairSpecialist")]
 public class AdminController : Controller
 {
     private readonly UserManager<AppUser> _userManager;
@@ -32,13 +33,25 @@ public class AdminController : Controller
     }
 
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Users()
+    public async Task<IActionResult> Users(string? search, int page = 1, int pageSize = 20)
     {
-        var users = _userManager.Users
+        page = Math.Max(1, page);
+        var query = _userManager.Users
             .Include(u => u.Orders)
             .Include(u => u.RepairRequests)
             .Include(u => u.Reviews)
-            .ToList();
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var lowerSearch = search.ToLower();
+            query = query.Where(u => u.FullName.ToLower().Contains(lowerSearch) ||
+                                     u.Email.ToLower().Contains(lowerSearch));
+        }
+
+        var users = await query
+            .OrderByDescending(u => u.CreatedAt)
+            .ToPagedListAsync(page, pageSize);
 
         var userRoles = new Dictionary<string, IList<string>>();
         foreach (var user in users)
@@ -49,6 +62,7 @@ public class AdminController : Controller
 
         ViewBag.UserRoles = userRoles;
         ViewBag.AvailableRoles = new[] { "Expert", "ProductAdmin", "RepairSpecialist", "Admin", "Народный эксперт" };
+        ViewBag.Search = search;
         
         return View(users);
     }

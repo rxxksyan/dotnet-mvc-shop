@@ -69,6 +69,9 @@
                 <dt>Описание проблемы</dt>
                 <dd>@Model.IssueDescription</dd>
 
+                <dt>Мастер</dt>
+                <dd>@(Model.MasterUser?.FullName ?? "Не назначен")</dd>
+
                 <dt>Статус</dt>
                 <dd>
                     @{
