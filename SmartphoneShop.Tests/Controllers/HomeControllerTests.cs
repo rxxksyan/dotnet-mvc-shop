@@ -4,6 +4,7 @@ using Moq;
 using SmartphoneShop.Core.Entities;
 using SmartphoneShop.Core.Interfaces;
 using SmartphoneShop.Web.Controllers;
+using SmartphoneShop.Web.Models;
 using System.Security.Claims;
 using Xunit;
 
@@ -32,13 +33,8 @@ public class HomeControllerTests
 
         var httpContext = new Mock<HttpContext>();
         httpContext.Setup(x => x.Session).Returns(_session.Object);
-
-        var sessionId = "test-session-id";
-        byte[] sessionIdBytes = System.Text.Encoding.UTF8.GetBytes(sessionId);
-        _session.Setup(s => s.TryGetValue("__init", out It.Ref<byte[]>.IsAny)).Returns(true);
-        _session.Setup(s => s.Id).Returns(sessionId);
-
         httpContext.Setup(x => x.RequestServices).Returns(_serviceProvider.Object);
+        httpContext.Setup(x => x.User).Returns(new ClaimsPrincipal(new ClaimsIdentity()));
         _serviceProvider.Setup(x => x.GetService(typeof(IComparisonRepository)))
             .Returns(_comparisonRepo.Object);
 
@@ -46,6 +42,14 @@ public class HomeControllerTests
         {
             HttpContext = httpContext.Object
         };
+
+        var tempDataFactory = new Mock<Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory>();
+        var tempDataProvider = new Mock<Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataProvider>();
+        tempDataFactory.Setup(f => f.GetTempData(It.IsAny<HttpContext>()))
+            .Returns(new Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary(
+                httpContext.Object, tempDataProvider.Object));
+        _serviceProvider.Setup(s => s.GetService(typeof(Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory)))
+            .Returns(tempDataFactory.Object);
     }
 
     [Fact]

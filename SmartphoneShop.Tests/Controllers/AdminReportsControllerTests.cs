@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Moq;
 using SmartphoneShop.Infrastructure.Data;
 using SmartphoneShop.Web.Controllers;
@@ -11,15 +12,18 @@ namespace SmartphoneShop.Tests.Controllers;
 
 public class AdminReportsControllerTests
 {
-    private readonly Mock<AppDbContext> _context;
+    private readonly AppDbContext _context;
     private readonly Mock<ReportGenerator> _reportGenerator;
     private readonly AdminReportsController _controller;
 
     public AdminReportsControllerTests()
     {
-        _context = new Mock<AppDbContext>();
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        _context = new AppDbContext(options);
         _reportGenerator = new Mock<ReportGenerator>();
-        _controller = new AdminReportsController(_context.Object, _reportGenerator.Object);
+        _controller = new AdminReportsController(_context, _reportGenerator.Object);
 
         var httpContext = new Mock<HttpContext>();
         var session = new Mock<ISession>();

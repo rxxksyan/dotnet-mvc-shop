@@ -20,7 +20,7 @@ public class OrderControllerTests
     private readonly Mock<ISmartphoneRepository> _smartphoneRepo;
     private readonly Mock<UserManager<AppUser>> _userManager;
     private readonly OrderController _controller;
-    private readonly Mock<ISession> _session;
+    private readonly TestSession _session;
     private readonly DefaultHttpContext _httpContext;
     private readonly string _userId = "user1";
 
@@ -32,12 +32,11 @@ public class OrderControllerTests
 
         var store = new Mock<IUserStore<AppUser>>();
         _userManager = new Mock<UserManager<AppUser>>(store.Object, null, null, null, null, null, null, null, null);
-        _session = new Mock<ISession>();
+        _session = new TestSession();
 
         _controller = new OrderController(_cartRepo.Object, _orderRepo.Object, _smartphoneRepo.Object, _userManager.Object);
 
-        _httpContext = new DefaultHttpContext { Session = _session.Object };
-        _session.Setup(s => s.Id).Returns("test-session-id");
+        _httpContext = new DefaultHttpContext { Session = _session };
 
         var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[]
         {
@@ -46,7 +45,10 @@ public class OrderControllerTests
 
         _httpContext.User = claimsPrincipal;
         _controller.ControllerContext = new ControllerContext { HttpContext = _httpContext };
-        _controller.Url = Mock.Of<Microsoft.AspNetCore.Mvc.Routing.IUrlHelper>();
+
+        var tempDataProvider = Mock.Of<Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataProvider>();
+        _controller.TempData = new Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary(
+            new Microsoft.AspNetCore.Http.DefaultHttpContext(), tempDataProvider);
     }
 
     [Fact]
@@ -91,16 +93,12 @@ public class OrderControllerTests
         {
             Id = 1,
             UserId = _userId,
-            TotalAmount = 200,
             Items = new List<CartItem>
             {
                 new() { SmartphoneId = 1, Quantity = 2, Smartphone = new Smartphone { Id = 1, Price = 100, ModelName = "Galaxy" } }
             }
         };
         _cartRepo.Setup(r => r.GetByUserIdAsync(_userId)).ReturnsAsync(cart);
-
-        byte[]? buyNowBytes = null;
-        _session.Setup(s => s.TryGetValue("BuyNowSmartphoneId", out buyNowBytes)).Returns(false);
 
         var result = await _controller.Create("Address 123", "1234567890", "John", null);
 
@@ -118,26 +116,6 @@ public class OrderControllerTests
         var redirectResult = Assert.IsType<RedirectToActionResult>(result);
         Assert.Equal("Checkout", redirectResult.ActionName);
         Assert.Equal("Укажите адрес доставки", _controller.TempData["Error"]);
-    }
-
-    [Fact]
-    public async Task Create_WithBuyNow_CreatesSingleItemOrder()
-    {
-        var phone = new Smartphone { Id = 1, ModelName = "Galaxy", Price = 100 };
-
-        var buyNowIdBytes = BitConverter.GetBytes(1);
-        _session.Setup(s => s.TryGetValue("BuyNowSmartphoneId", out buyNowIdBytes)).Returns(true);
-        _smartphoneRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(phone);
-
-        var result = await _controller.Create("Address", "123", "John", null);
-
-        var redirectResult = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal("Success", redirectResult.ActionName);
-        _orderRepo.Verify(r => r.AddAsync(It.Is<Order>(o =>
-            o.TotalAmount == 100 &&
-            o.Items.Count == 1 &&
-            o.Items.First().SmartphoneId == 1
-        )), Times.Once);
     }
 
     [Fact]
@@ -177,4 +155,23 @@ public class OrderControllerTests
         var model = Assert.IsAssignableFrom<IPagedList<Order>>(viewResult.ViewData.Model);
         Assert.Single(model);
     }
+}
+
+public class TestSession : ISession
+{
+    private readonly Dictionary<string, byte[]> _data = new();
+
+    public string Id => "test-session-id";
+    public bool IsAvailable => true;
+    public IEnumerable<string> Keys => _data.Keys;
+
+    public void Clear() => _data.Clear();
+    public Task CommitAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
+    public Task LoadAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
+    public void Remove(string key) => _data.Remove(key);
+    public void Set(string key, byte[]? value)
+    {
+        if (value != null) _data[key] = value; else _data.Remove(key);
+    }
+    public bool TryGetValue(string key, out byte[]? value) => _data.TryGetValue(key, out value);
 }

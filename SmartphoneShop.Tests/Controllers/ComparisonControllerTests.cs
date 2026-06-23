@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 using SmartphoneShop.Core.Entities;
@@ -17,7 +18,7 @@ public class ComparisonControllerTests
     private readonly Mock<IComparisonRepository> _comparisonRepo;
     private readonly Mock<ISmartphoneRepository> _smartphoneRepo;
     private readonly Mock<ILogger<ComparisonController>> _logger;
-    private readonly Mock<AppDbContext> _context;
+    private readonly AppDbContext _context;
     private readonly Mock<UserManager<AppUser>> _userManager;
     private readonly ComparisonController _controller;
     private readonly Mock<ISession> _session;
@@ -28,16 +29,22 @@ public class ComparisonControllerTests
         _comparisonRepo = new Mock<IComparisonRepository>();
         _smartphoneRepo = new Mock<ISmartphoneRepository>();
         _logger = new Mock<ILogger<ComparisonController>>();
-        _context = new Mock<AppDbContext>();
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        _context = new AppDbContext(options);
         var store = new Mock<IUserStore<AppUser>>();
         _userManager = new Mock<UserManager<AppUser>>(store.Object, null, null, null, null, null, null, null, null);
         _session = new Mock<ISession>();
 
         _controller = new ComparisonController(
-            _comparisonRepo.Object, _smartphoneRepo.Object, _logger.Object, _context.Object, _userManager.Object);
+            _comparisonRepo.Object, _smartphoneRepo.Object, _logger.Object, _context, _userManager.Object);
 
         var httpContext = new Mock<HttpContext>();
         httpContext.Setup(x => x.Session).Returns(_session.Object);
+        var request = new Mock<HttpRequest>();
+        request.Setup(r => r.Headers).Returns(new Microsoft.AspNetCore.Http.HeaderDictionary());
+        httpContext.Setup(x => x.Request).Returns(request.Object);
         _session.Setup(s => s.Id).Returns("test-session-id");
 
         var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[]

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Moq;
 using SmartphoneShop.Core.Entities;
 using SmartphoneShop.Core.Enums;
@@ -13,7 +14,7 @@ namespace SmartphoneShop.Tests.Controllers;
 
 public class AdminRepairsControllerTests
 {
-    private readonly Mock<AppDbContext> _context;
+    private readonly AppDbContext _context;
     private readonly Mock<UserManager<AppUser>> _userManager;
     private readonly AdminRepairsController _controller;
 
@@ -21,9 +22,12 @@ public class AdminRepairsControllerTests
     {
         var store = new Mock<IUserStore<AppUser>>();
         _userManager = new Mock<UserManager<AppUser>>(store.Object, null, null, null, null, null, null, null, null);
-        _context = new Mock<AppDbContext>();
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        _context = new AppDbContext(options);
 
-        _controller = new AdminRepairsController(_context.Object, _userManager.Object);
+        _controller = new AdminRepairsController(_context, _userManager.Object);
 
         var httpContext = new Mock<HttpContext>();
         var session = new Mock<ISession>();
@@ -57,9 +61,6 @@ public class AdminRepairsControllerTests
     [Fact]
     public async Task Details_WithInvalidId_ReturnsNotFound()
     {
-        _context.Setup(c => c.RepairRequests.FindAsync(999))
-            .ReturnsAsync((RepairRequest?)null);
-
         var result = await _controller.Details(999);
         Assert.IsType<NotFoundResult>(result);
     }

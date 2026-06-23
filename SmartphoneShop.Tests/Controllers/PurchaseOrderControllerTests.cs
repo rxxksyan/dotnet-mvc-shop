@@ -43,7 +43,10 @@ public class PurchaseOrderControllerTests
             .ReturnsAsync(new AppUser { Id = _userId, UserName = "test" });
 
         _controller.ControllerContext = new ControllerContext { HttpContext = httpContext.Object };
-        _controller.Url = Mock.Of<Microsoft.AspNetCore.Mvc.Routing.IUrlHelper>();
+
+        var tempDataProvider = Mock.Of<Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataProvider>();
+        _controller.TempData = new Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary(
+            new Microsoft.AspNetCore.Http.DefaultHttpContext(), tempDataProvider);
     }
 
     [Fact]

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Moq;
 using SmartphoneShop.Core.Entities;
 using SmartphoneShop.Core.Enums;
@@ -14,16 +15,19 @@ namespace SmartphoneShop.Tests.Controllers;
 public class RepairControllerTests
 {
     private readonly Mock<IRepairRequestRepository> _repairRepo;
-    private readonly Mock<AppDbContext> _context;
+    private readonly AppDbContext _context;
     private readonly RepairController _controller;
     private readonly string _userId = "user1";
 
     public RepairControllerTests()
     {
         _repairRepo = new Mock<IRepairRequestRepository>();
-        _context = new Mock<AppDbContext>();
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        _context = new AppDbContext(options);
 
-        _controller = new RepairController(_repairRepo.Object, _context.Object);
+        _controller = new RepairController(_repairRepo.Object, _context);
 
         var httpContext = new Mock<HttpContext>();
         var session = new Mock<ISession>();
@@ -37,6 +41,10 @@ public class RepairControllerTests
         httpContext.Setup(x => x.User).Returns(claimsPrincipal);
 
         _controller.ControllerContext = new ControllerContext { HttpContext = httpContext.Object };
+
+        var tempDataProvider = Mock.Of<Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataProvider>();
+        _controller.TempData = new Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary(
+            new Microsoft.AspNetCore.Http.DefaultHttpContext(), tempDataProvider);
     }
 
     [Fact]

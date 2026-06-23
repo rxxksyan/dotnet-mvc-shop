@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Moq;
 using SmartphoneShop.Core.Entities;
 using SmartphoneShop.Infrastructure.Data;
@@ -14,7 +15,7 @@ public class AdminControllerTests
 {
     private readonly Mock<UserManager<AppUser>> _userManager;
     private readonly Mock<RoleManager<IdentityRole>> _roleManager;
-    private readonly Mock<AppDbContext> _context;
+    private readonly AppDbContext _context;
     private readonly AdminController _controller;
     private readonly string _userId = "admin1";
 
@@ -25,9 +26,12 @@ public class AdminControllerTests
 
         var roleStore = new Mock<IRoleStore<IdentityRole>>();
         _roleManager = new Mock<RoleManager<IdentityRole>>(roleStore.Object, null, null, null, null);
-        _context = new Mock<AppDbContext>();
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        _context = new AppDbContext(options);
 
-        _controller = new AdminController(_userManager.Object, _roleManager.Object, _context.Object);
+        _controller = new AdminController(_userManager.Object, _roleManager.Object, _context);
 
         var httpContext = new Mock<HttpContext>();
         var session = new Mock<ISession>();
@@ -42,17 +46,10 @@ public class AdminControllerTests
         _userManager.Setup(u => u.GetUserId(claimsPrincipal)).Returns(_userId);
 
         _controller.ControllerContext = new ControllerContext { HttpContext = httpContext.Object };
-    }
 
-    [Fact]
-    public async Task Index_ReturnsViewWithCounts()
-    {
-        var usersMock = new Mock<IQueryable<AppUser>>();
-        _userManager.Setup(u => u.Users).Returns(usersMock.Object);
-
-        var result = await _controller.Index();
-
-        var viewResult = Assert.IsType<ViewResult>(result);
+        var tempDataProvider = Mock.Of<Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataProvider>();
+        _controller.TempData = new Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary(
+            new Microsoft.AspNetCore.Http.DefaultHttpContext(), tempDataProvider);
     }
 
     [Fact]

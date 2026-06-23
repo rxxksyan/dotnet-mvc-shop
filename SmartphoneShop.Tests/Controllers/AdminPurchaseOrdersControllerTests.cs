@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Moq;
 using SmartphoneShop.Infrastructure.Data;
 using SmartphoneShop.Web.Controllers;
@@ -10,13 +11,16 @@ namespace SmartphoneShop.Tests.Controllers;
 
 public class AdminPurchaseOrdersControllerTests
 {
-    private readonly Mock<AppDbContext> _context;
+    private readonly AppDbContext _context;
     private readonly AdminPurchaseOrdersController _controller;
 
     public AdminPurchaseOrdersControllerTests()
     {
-        _context = new Mock<AppDbContext>();
-        _controller = new AdminPurchaseOrdersController(_context.Object);
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        _context = new AppDbContext(options);
+        _controller = new AdminPurchaseOrdersController(_context);
 
         var httpContext = new Mock<HttpContext>();
         var session = new Mock<ISession>();

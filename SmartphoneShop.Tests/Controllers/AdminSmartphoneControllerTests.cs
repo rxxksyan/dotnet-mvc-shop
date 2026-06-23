@@ -13,13 +13,16 @@ namespace SmartphoneShop.Tests.Controllers;
 
 public class AdminSmartphoneControllerTests
 {
-    private readonly Mock<AppDbContext> _context;
+    private readonly AppDbContext _context;
     private readonly AdminSmartphoneController _controller;
 
     public AdminSmartphoneControllerTests()
     {
-        _context = new Mock<AppDbContext>();
-        _controller = new AdminSmartphoneController(_context.Object);
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        _context = new AppDbContext(options);
+        _controller = new AdminSmartphoneController(_context);
 
         var httpContext = new Mock<HttpContext>();
         var session = new Mock<ISession>();
@@ -40,9 +43,6 @@ public class AdminSmartphoneControllerTests
     [Fact]
     public async Task Edit_Get_WithInvalidId_ReturnsNotFound()
     {
-        _context.Setup(c => c.Smartphones.FindAsync(999))
-            .ReturnsAsync((Smartphone?)null);
-
         var result = await _controller.Edit(999);
         Assert.IsType<NotFoundResult>(result);
     }
@@ -50,8 +50,8 @@ public class AdminSmartphoneControllerTests
     [Fact]
     public async Task Delete_DeletesSmartphone()
     {
-        var phone = new Smartphone { Id = 1, ModelName = "Test", Brand = "B" };
-        _context.Setup(c => c.Smartphones.FindAsync(1)).ReturnsAsync(phone);
+        _context.Smartphones.Add(new Smartphone { Id = 1, ModelName = "Test", Brand = "B" });
+        _context.SaveChanges();
 
         var result = await _controller.Delete(1);
 

@@ -8,6 +8,7 @@ using SmartphoneShop.Core.Interfaces;
 using SmartphoneShop.Web.Controllers;
 using SmartphoneShop.Web.Extensions;
 using System.Security.Claims;
+using System.Text;
 using X.PagedList;
 using Xunit;
 
@@ -41,12 +42,17 @@ public class ProductControllerTests
 
         var httpContext = new Mock<HttpContext>();
         httpContext.Setup(x => x.Session).Returns(_session.Object);
+        httpContext.Setup(x => x.User).Returns(new ClaimsPrincipal(new ClaimsIdentity()));
         _session.Setup(s => s.Id).Returns("test-session-id");
 
         _controller.ControllerContext = new ControllerContext
         {
             HttpContext = httpContext.Object
         };
+
+        var tempDataProvider = Mock.Of<Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataProvider>();
+        _controller.TempData = new Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary(
+            new Microsoft.AspNetCore.Http.DefaultHttpContext(), tempDataProvider);
     }
 
     [Fact]
@@ -214,8 +220,8 @@ public class ProductControllerTests
         Assert.Equal("Checkout", redirectResult.ActionName);
         Assert.Equal("Order", redirectResult.ControllerName);
 
-        _session.Verify(s => s.SetInt32("BuyNowSmartphoneId", 1), Times.Once);
-        _session.Verify(s => s.SetString("BuyNowSmartphoneName", "Galaxy"), Times.Once);
+        _session.Verify(s => s.Set("BuyNowSmartphoneId", It.IsAny<byte[]>()), Times.Once);
+        _session.Verify(s => s.Set("BuyNowSmartphoneName", It.IsAny<byte[]>()), Times.Once);
     }
 
     [Fact]

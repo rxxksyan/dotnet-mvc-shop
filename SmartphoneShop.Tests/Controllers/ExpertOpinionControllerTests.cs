@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Moq;
 using SmartphoneShop.Core.Entities;
 using SmartphoneShop.Infrastructure.Data;
@@ -12,7 +13,7 @@ namespace SmartphoneShop.Tests.Controllers;
 
 public class ExpertOpinionControllerTests
 {
-    private readonly Mock<AppDbContext> _context;
+    private readonly AppDbContext _context;
     private readonly Mock<UserManager<AppUser>> _userManager;
     private readonly ExpertOpinionController _controller;
     private readonly string _userId = "expert1";
@@ -21,9 +22,12 @@ public class ExpertOpinionControllerTests
     {
         var store = new Mock<IUserStore<AppUser>>();
         _userManager = new Mock<UserManager<AppUser>>(store.Object, null, null, null, null, null, null, null, null);
-        _context = new Mock<AppDbContext>();
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        _context = new AppDbContext(options);
 
-        _controller = new ExpertOpinionController(_context.Object, _userManager.Object);
+        _controller = new ExpertOpinionController(_context, _userManager.Object);
 
         var httpContext = new Mock<HttpContext>();
         var session = new Mock<ISession>();
@@ -65,9 +69,6 @@ public class ExpertOpinionControllerTests
     [Fact]
     public async Task Edit_Get_WithInvalidId_ReturnsNotFound()
     {
-        _context.Setup(c => c.ExpertOpinions.FindAsync(999))
-            .ReturnsAsync((ExpertOpinion?)null);
-
         var result = await _controller.Edit(999);
         Assert.IsType<NotFoundResult>(result);
     }
@@ -75,9 +76,6 @@ public class ExpertOpinionControllerTests
     [Fact]
     public async Task Delete_WithInvalidId_ReturnsNotFound()
     {
-        _context.Setup(c => c.ExpertOpinions.FindAsync(999))
-            .ReturnsAsync((ExpertOpinion?)null);
-
         var result = await _controller.Delete(999);
         Assert.IsType<NotFoundResult>(result);
     }

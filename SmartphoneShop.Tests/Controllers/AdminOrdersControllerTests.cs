@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Moq;
 using SmartphoneShop.Core.Entities;
 using SmartphoneShop.Core.Enums;
@@ -12,13 +13,16 @@ namespace SmartphoneShop.Tests.Controllers;
 
 public class AdminOrdersControllerTests
 {
-    private readonly Mock<AppDbContext> _context;
+    private readonly AppDbContext _context;
     private readonly AdminOrdersController _controller;
 
     public AdminOrdersControllerTests()
     {
-        _context = new Mock<AppDbContext>();
-        _controller = new AdminOrdersController(_context.Object);
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        _context = new AppDbContext(options);
+        _controller = new AdminOrdersController(_context);
 
         var httpContext = new Mock<HttpContext>();
         var session = new Mock<ISession>();

@@ -33,6 +33,10 @@ public class AccountControllerTests
         httpContext.Setup(x => x.Session).Returns(session.Object);
         session.Setup(s => s.Id).Returns("test-session-id");
         _controller.ControllerContext = new ControllerContext { HttpContext = httpContext.Object };
+
+        var tempDataProvider = Mock.Of<Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataProvider>();
+        _controller.TempData = new Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary(
+            new Microsoft.AspNetCore.Http.DefaultHttpContext(), tempDataProvider);
     }
 
     [Fact]
