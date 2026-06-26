@@ -70,12 +70,14 @@ public class OrderController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(string deliveryAddress, string contactPhone, string contactName, string? notes)
+    public async Task<IActionResult> Create(string deliveryType, string deliveryAddress, string contactPhone, string contactName, string? notes)
     {
         var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         if (userId == null) return RedirectToAction("Login", "Account");
 
-        if (string.IsNullOrWhiteSpace(deliveryAddress))
+        var dt = deliveryType == "Pickup" ? DeliveryType.Pickup : DeliveryType.Delivery;
+
+        if (dt == DeliveryType.Delivery && string.IsNullOrWhiteSpace(deliveryAddress))
         {
             TempData["Error"] = "Укажите адрес доставки";
             return RedirectToAction("Checkout");
@@ -104,7 +106,8 @@ public class OrderController : Controller
                 UserId = userId,
                 TotalAmount = smartphone.Price,
                 Status = OrderStatus.Pending,
-                DeliveryAddress = deliveryAddress,
+                DeliveryType = dt,
+                DeliveryAddress = dt == DeliveryType.Pickup ? "Самовывоз (магазин)" : deliveryAddress,
                 ContactPhone = contactPhone,
                 ContactName = contactName,
                 Notes = notes,
@@ -137,7 +140,8 @@ public class OrderController : Controller
                 UserId = userId,
                 TotalAmount = cart.TotalAmount,
                 Status = OrderStatus.Pending,
-                DeliveryAddress = deliveryAddress,
+                DeliveryType = dt,
+                DeliveryAddress = dt == DeliveryType.Pickup ? "Самовывоз (магазин)" : deliveryAddress,
                 ContactPhone = contactPhone,
                 ContactName = contactName,
                 Notes = notes,

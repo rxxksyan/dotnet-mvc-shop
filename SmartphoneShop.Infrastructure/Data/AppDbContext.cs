@@ -104,6 +104,8 @@ public class AppDbContext : IdentityDbContext<AppUser>
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.TotalAmount).HasColumnType("decimal(10,2)");
+            entity.Property(e => e.DeliveryType).HasConversion<string>().HasMaxLength(20);
+            entity.Property(e => e.DeliveryAddress).HasMaxLength(500);
             entity.HasOne(e => e.User)
                 .WithMany(u => u.Orders)
                 .HasForeignKey(e => e.UserId)

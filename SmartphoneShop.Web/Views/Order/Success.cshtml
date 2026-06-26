@@ -3,65 +3,207 @@
     ViewData["Title"] = "Заказ #" + Model.Id;
 }
 
+<style>
+.receipt-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 30px;
+}
+.cta-button {
+    display: inline-flex;
+    align-items: center;
+    padding: 12px 28px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    background: #D44177;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+.cta-button:hover { background: #c03065; }
+
+@@media print {
+    body { background: #fff; color: #000; }
+    header, footer, .receipt-actions, .cta-button, .hamburger { display: none !important; }
+    .container { max-width: 100%; padding: 0; margin: 0; }
+    .main-content { padding-top: 0; }
+}
+</style>
+
 <section>
     <div class="container">
-        <div style="max-width: 600px; margin: 40px auto;">
-            <div class="card" style="border-radius: 16px; background: #2c2c2c; border: 1px solid #3a3a3a; padding: 30px; margin-bottom: 20px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid #3a3a3a;">
+        <div id="receipt" style="width: 800px; margin: 0 auto;">
+            <div style="background: #1a1a1a; padding: 40px 48px; color: #e0e0e0;">
+
+                <div style="text-align: center; margin-bottom: 32px; padding-bottom: 20px; border-bottom: 2px solid #D44177;">
+                    <div style="color: #D44177; font-weight: 900; font-size: 30px; letter-spacing: 5px;">RXXMRKT</div>
+                    <div style="color: #999; font-size: 11px; margin-top: 6px; letter-spacing: 2px;">ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ</div>
+                    <div style="color: #888; font-size: 11px; margin-top: 2px;">УНП 193654321, р/с BY65ALFA30123456780000000</div>
+                    <div style="color: #888; font-size: 11px;">г. Минск, ул. Сурганова, 57Б</div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 28px;">
                     <div>
-                        <h3 style="margin: 0; font-size: 20px;">Заказ #@Model.Id</h3>
-                        <p style="margin: 5px 0 0 0; color: #b0b0b0; font-size: 14px;">@Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</p>
+                        <div style="color: #666; font-size: 10px; letter-spacing: 1px;">ДОКУМЕНТ</div>
+                        <div style="font-size: 22px; font-weight: 800; color: #fff; margin-top: 4px;">ТОВАРНЫЙ ЧЕК №@Model.Id</div>
                     </div>
-                    <span class="badge status-pending" style="padding: 8px 16px; font-size: 14px; border-radius: 20px;">@(Model.Status == SmartphoneShop.Core.Enums.OrderStatus.Pending ? "Оформлен" : Model.Status == SmartphoneShop.Core.Enums.OrderStatus.Confirmed ? "Подтверждён" : Model.Status == SmartphoneShop.Core.Enums.OrderStatus.Shipped ? "Отправлен" : Model.Status == SmartphoneShop.Core.Enums.OrderStatus.Delivered ? "Доставлен" : "Отменён")</span>
-                </div>
-
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid #3a3a3a;">
-                    <span style="color: #b0b0b0;">@Model.Items.Count() товар(ов)</span>
-                    <span style="font-size: 24px; font-weight: bold; color: #D44177;">@Model.TotalAmount.ToString("N0") BYN</span>
-                </div>
-
-                <div style="margin-bottom: 20px;">
-                    <div style="display: flex; justify-content: space-between; padding: 10px 0;">
-                        <span style="color: #b0b0b0;">Адрес</span>
-                        <span>@Model.DeliveryAddress</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 10px 0;">
-                        <span style="color: #b0b0b0;">Телефон</span>
-                        <span>@Model.ContactPhone</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 10px 0;">
-                        <span style="color: #b0b0b0;">Получатель</span>
-                        <span>@Model.ContactName</span>
+                    <div style="text-align: right;">
+                        <div style="color: #999; font-size: 13px;">@Model.CreatedAt.ToString("dd.MM.yyyy")</div>
+                        <div style="color: #999; font-size: 13px;">@Model.CreatedAt.ToString("HH:mm")</div>
                     </div>
                 </div>
-            </div>
 
-            <div class="card" style="border-radius: 16px; background: #2c2c2c; border: 1px solid #3a3a3a; padding: 25px; margin-bottom: 30px;">
-                <h4 style="margin: 0 0 20px 0;">Товары в заказе</h4>
-                <div style="display: flex; flex-direction: column; gap: 15px;">
-                    @foreach (var item in Model.Items)
-                    {
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #1a1a1a; border-radius: 10px;">
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                @if (!string.IsNullOrEmpty(item.Smartphone?.ImageUrl))
-                                {
-                                    <img src="@item.Smartphone.ImageUrl" alt="@item.Smartphone.ModelName" style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px;" />
-                                }
-                                <div>
-                                    <strong>@(item.Smartphone?.ModelName ?? "Товар")</strong>
-                                    <p style="margin: 5px 0 0 0; color: #b0b0b0; font-size: 14px;">× @item.Quantity</p>
-                                </div>
-                            </div>
-                            <strong style="color: #D44177;">@item.TotalPrice.ToString("N0") BYN</strong>
+                <div style="display: flex; gap: 24px; margin-bottom: 28px;">
+                    <div style="flex: 1; background: #242424; border-radius: 8px; padding: 16px 20px;">
+                        <div style="color: #666; font-size: 10px; letter-spacing: 1px; margin-bottom: 8px;">ПЛАТЕЛЬЩИК</div>
+                        <div style="color: #e0e0e0; font-weight: 600;">@Model.ContactName</div>
+                        <div style="color: #999; font-size: 13px; margin-top: 2px;">тел. @Model.ContactPhone</div>
+                    </div>
+                    <div style="flex: 1; background: #242424; border-radius: 8px; padding: 16px 20px;">
+                        <div style="color: #666; font-size: 10px; letter-spacing: 1px; margin-bottom: 8px;">СПОСОБ ПОЛУЧЕНИЯ</div>
+                        <div style="color: #e0e0e0; font-weight: 600;">@(Model.DeliveryType == SmartphoneShop.Core.Enums.DeliveryType.Pickup ? "Самовывоз" : "Доставка")</div>
+                        <div style="color: #999; font-size: 13px; margin-top: 2px;">@Model.DeliveryAddress</div>
+                    </div>
+                    <div style="flex: 1; background: #242424; border-radius: 8px; padding: 16px 20px;">
+                        <div style="color: #666; font-size: 10px; letter-spacing: 1px; margin-bottom: 8px;">СТАТУС</div>
+                        <div style="color: #D44177; font-weight: 700; font-size: 13px;">
+                            @(Model.Status == SmartphoneShop.Core.Enums.OrderStatus.Pending ? "ОФОРМЛЕН" : Model.Status == SmartphoneShop.Core.Enums.OrderStatus.Confirmed ? "ПОДТВЕРЖДЁН" : Model.Status == SmartphoneShop.Core.Enums.OrderStatus.Shipped ? "ОТПРАВЛЕН" : Model.Status == SmartphoneShop.Core.Enums.OrderStatus.Delivered ? "ДОСТАВЛЕН" : "ОТМЕНЁН")
                         </div>
-                    }
+                    </div>
                 </div>
-            </div>
 
-            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-                <a href="/order/history" class="cta-button">Мои заказы</a>
-                <a href="/catalog" class="cta-button" style="background: #3a3a3a;">Продолжить покупки</a>
+                <div style="margin-bottom: 24px;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                        <thead>
+                            <tr style="background: #242424; border-bottom: 2px solid #D44177;">
+                                <th style="padding: 12px 14px; text-align: left; color: #D44177; font-size: 10px; letter-spacing: 1px; width: 60px;">ФОТО</th>
+                                <th style="padding: 12px 14px; text-align: left; color: #D44177; font-size: 10px; letter-spacing: 1px;">НАИМЕНОВАНИЕ</th>
+                                <th style="padding: 12px 14px; text-align: center; color: #D44177; font-size: 10px; letter-spacing: 1px; width: 70px;">КОЛ-ВО</th>
+                                <th style="padding: 12px 14px; text-align: right; color: #D44177; font-size: 10px; letter-spacing: 1px; width: 100px;">ЦЕНА</th>
+                                <th style="padding: 12px 14px; text-align: right; color: #D44177; font-size: 10px; letter-spacing: 1px; width: 120px;">СУММА</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Items)
+                            {
+                                <tr style="border-bottom: 1px solid #2a2a2a;">
+                                    <td style="padding: 10px 14px; text-align: center;">
+                                        @if (!string.IsNullOrEmpty(item.Smartphone?.ImageUrl))
+                                        {
+                                            <img src="@item.Smartphone.ImageUrl" alt="" style="width: 48px; height: 48px; object-fit: contain; border-radius: 6px; display: block; margin: 0 auto;" />
+                                        }
+                                    </td>
+                                    <td style="padding: 10px 14px; color: #e0e0e0; font-weight: 600;">@(item.Smartphone?.ModelName ?? "Товар")</td>
+                                    <td style="padding: 10px 14px; text-align: center; color: #b0b0b0;">@item.Quantity</td>
+                                    <td style="padding: 10px 14px; text-align: right; color: #b0b0b0;">@item.PriceAtPurchase.ToString("N0")</td>
+                                    <td style="padding: 10px 14px; text-align: right; color: #fff; font-weight: 700;">@item.TotalPrice.ToString("N0") BYN</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="background: #242424; border-radius: 8px; padding: 24px; margin-bottom: 28px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="color: #888; font-size: 11px; letter-spacing: 1px; margin-bottom: 2px;">ИТОГО К ОПЛАТЕ</div>
+                            <div style="color: #999; font-size: 12px;">@Model.Items.Count() @(Model.Items.Count() == 1 ? "позиция" : "позиции(ий)")</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 32px; font-weight: 900; color: #D44177;">@Model.TotalAmount.ToString("N0")</div>
+                            <div style="color: #D44177; font-size: 14px; font-weight: 600; margin-top: 2px;">BYN</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 200px;"></div>
+
+                <div style="text-align: center; padding-top: 24px; border-top: 1px solid #2a2a2a;">
+                    <div style="color: #D44177; font-size: 24px; font-weight: 900; letter-spacing: 3px; margin-bottom: 4px;">RXXMRKT</div>
+                    <div style="color: #555; font-size: 11px;">Спасибо за покупку!</div>
+                    <div style="color: #555; font-size: 10px; margin-top: 2px;">Возврат и обмен в течение 14 дней при наличии чека</div>
+                </div>
+
             </div>
+        </div>
+
+        <div class="receipt-actions" id="receiptActions" style="margin-top: 30px;">
+            <button type="button" class="cta-button" onclick="downloadPDF(event)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
+                    <path d="M6 9V2h12v7"></path>
+                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                    <rect x="6" y="14" width="12" height="8"></rect>
+                </svg>
+                Скачать чек (PDF)
+            </button>
+            <a href="/order/history" class="cta-button">Мои заказы</a>
+            <a href="/catalog" class="cta-button" style="background: #3a3a3a;">Продолжить покупки</a>
         </div>
     </div>
 </section>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+    function downloadPDF(e) {
+        const btn = e.currentTarget;
+        btn.disabled = true;
+        btn.textContent = 'Скачивание...';
+
+        html2canvas(document.getElementById('receipt'), {
+            scale: 3,
+            backgroundColor: '#1a1a1a',
+            allowTaint: false,
+            useCORS: true,
+            logging: false
+        }).then(function(canvas) {
+            const imgData = canvas.toDataURL('image/jpeg', 0.97);
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+            const usableWidth = pageWidth;
+            const imgHeight = (canvas.height * usableWidth) / canvas.width;
+            let heightLeft = imgHeight;
+            let position = 0;
+
+            doc.setFillColor(26, 26, 26);
+            doc.rect(0, 0, pageWidth, pageHeight, 'F');
+            doc.addImage(imgData, 'JPEG', 0, 0, usableWidth, imgHeight);
+            heightLeft -= pageHeight;
+
+            while (heightLeft > 0) {
+                position = -(imgHeight - heightLeft);
+                doc.addPage();
+                doc.setFillColor(26, 26, 26);
+                doc.rect(0, 0, pageWidth, pageHeight, 'F');
+                doc.addImage(imgData, 'JPEG', 0, position, usableWidth, imgHeight);
+                heightLeft -= pageHeight;
+            }
+
+            doc.save('receipt-order-@(Model.Id).pdf');
+            btn.disabled = false;
+            btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
+                <path d="M6 9V2h12v7"></path>
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                <rect x="6" y="14" width="12" height="8"></rect>
+            </svg> Скачать чек (PDF)`;
+        }).catch(function(err) {
+            console.error('PDF generation failed:', err);
+            alert('Не удалось сгенерировать PDF. Попробуйте ещё раз.');
+            btn.disabled = false;
+            btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
+                <path d="M6 9V2h12v7"></path>
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                <rect x="6" y="14" width="12" height="8"></rect>
+            </svg> Скачать чек (PDF)`;
+        });
+    }
+    </script>
+}

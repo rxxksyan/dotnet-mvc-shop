@@ -65,7 +65,7 @@ public class CatalogController : Controller
 
         ViewBag.FavoriteIds = favoriteIds;
         ViewBag.ComparisonIds = comparisonIds;
-        ViewBag.Brands = new[] { "Samsung", "Apple", "Xiaomi", "Google" };
+        ViewBag.Brands = await _smartphoneRepo.GetDistinctBrandsAsync();
         ViewBag.CurrentBrand = brand;
         ViewBag.MinPrice = minPrice;
         ViewBag.MaxPrice = maxPrice;

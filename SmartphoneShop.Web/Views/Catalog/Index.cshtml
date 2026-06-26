@@ -7,8 +7,10 @@
     <div class="container">
         <h2 class="section-title">Каталог смартфонов</h2>
         
-        <div class="filters">
-            <form method="get" action="/catalog" style="display: contents;">
+        <button type="button" class="mobile-only filter-toggle cta-button" onclick="openFilterModal()" style="display: none; width: 100%; margin-bottom: 16px;">Фильтры</button>
+
+        <div class="filters" id="filterBar">
+            <form method="get" action="/catalog" id="filterForm" style="display: contents;">
                 <div class="filter-group" style="flex: 1; min-width: 180px;">
                     <label>Поиск</label>
                     <input type="text" name="search" value="@ViewBag.Search" placeholder="Название, бренд..." style="width: 100%;" />
@@ -17,7 +19,7 @@
                     <label>Бренд</label>
                     <select name="brand">
                         <option value="">Все бренды</option>
-                        @foreach (var brand in ViewBag.Brands as string[])
+                        @foreach (var brand in ViewBag.Brands )
                         {
                             <option value="@brand" selected="@(brand == ViewBag.CurrentBrand)">@brand</option>
                         }
@@ -66,6 +68,74 @@
                 </div>
             </form>
         </div>
+
+        <div class="filter-modal-overlay" id="filterModal" onclick="closeFilterModal(event)">
+            <div class="filter-modal" onclick="event.stopPropagation()">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="margin: 0; font-size: 18px;">Фильтры</h3>
+                    <button type="button" onclick="closeFilterModal()" style="background: none; border: none; color: #999; font-size: 24px; cursor: pointer; padding: 4px;">×</button>
+                </div>
+                <form method="get" action="/catalog" id="filterModalForm">
+                    <div style="display: flex; flex-direction: column; gap: 16px;">
+                        <div class="filter-group">
+                            <label>Поиск</label>
+                            <input type="text" name="search" value="@ViewBag.Search" placeholder="Название, бренд..." />
+                        </div>
+                        <div class="filter-group">
+                            <label>Бренд</label>
+                            <select name="brand">
+                                <option value="">Все бренды</option>
+                                @foreach (var brand in ViewBag.Brands )
+                                {
+                                    <option value="@brand" selected="@(brand == ViewBag.CurrentBrand)">@brand</option>
+                                }
+                            </select>
+                        </div>
+                        <div style="display: flex; gap: 12px;">
+                            <div class="filter-group" style="flex: 1;">
+                                <label>Цена от</label>
+                                <input type="number" name="minPrice" value="@ViewBag.MinPrice" placeholder="0" />
+                            </div>
+                            <div class="filter-group" style="flex: 1;">
+                                <label>Цена до</label>
+                                <input type="number" name="maxPrice" value="@ViewBag.MaxPrice" placeholder="200000" />
+                            </div>
+                        </div>
+                        <div class="filter-group">
+                            <label>ОЗУ</label>
+                            <select name="ram">
+                                <option value="">Любая</option>
+                                <option value="4" selected="@((int?)ViewBag.Ram == 4)">4 ГБ</option>
+                                <option value="6" selected="@((int?)ViewBag.Ram == 6)">6 ГБ</option>
+                                <option value="8" selected="@((int?)ViewBag.Ram == 8)">8 ГБ</option>
+                                <option value="12" selected="@((int?)ViewBag.Ram == 12)">12 ГБ</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Память</label>
+                            <select name="storage">
+                                <option value="">Любая</option>
+                                <option value="64" selected="@(ViewBag.Storage == 64)">64 ГБ</option>
+                                <option value="128" selected="@(ViewBag.Storage == 128)">128 ГБ</option>
+                                <option value="256" selected="@(ViewBag.Storage == 256)">256 ГБ</option>
+                                <option value="512" selected="@(ViewBag.Storage == 512)">512 ГБ</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Сортировка</label>
+                            <select name="sort">
+                                <option value="newest" selected="@(ViewBag.Sort == null || ViewBag.Sort == "newest")">Новинки</option>
+                                <option value="price_asc" selected="@(ViewBag.Sort == "price_asc")">Сначала дешёвые</option>
+                                <option value="price_desc" selected="@(ViewBag.Sort == "price_desc")">Сначала дорогие</option>
+                                <option value="name_asc" selected="@(ViewBag.Sort == "name_asc")">По названию (А-Я)</option>
+                                <option value="name_desc" selected="@(ViewBag.Sort == "name_desc")">По названию (Я-А)</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="cta-button" style="width: 100%;">Применить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
         
         <div class="product-grid">
             @foreach (var phone in Model)
@@ -102,7 +172,7 @@
                             <span>@(((double?)ViewBag.Ratings?[phone.Id])?.ToString("0.0") ?? "0.0")</span>
                         </div>
                     </div>
-                    <p class="description">@(phone.Description?.Length > 80 ? phone.Description.Substring(0, 80) + "..." : phone.Description)</p>
+                    <p class="description" style="height: 18px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">@phone.Description</p>
                     <p class="specs">@phone.ScreenSize" • @(phone.RAM ?? 0) ГБ • @(phone.Storage ?? 0) ГБ</p>
                     <p class="price">@phone.Price.ToString("N0") BYN</p>
                     <div class="product-actions" onclick="event.preventDefault(); event.stopPropagation();">
@@ -157,4 +227,17 @@
     </div>
 </section>
 
+@section Scripts {
+<script>
+function openFilterModal() {
+    document.getElementById('filterModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+function closeFilterModal(e) {
+    if (e && e.target !== e.currentTarget) return;
+    document.getElementById('filterModal').classList.remove('open');
+    document.body.style.overflow = '';
+}
+</script>
+}
 

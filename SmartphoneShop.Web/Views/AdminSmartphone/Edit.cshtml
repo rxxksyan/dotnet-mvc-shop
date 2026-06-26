@@ -227,14 +227,21 @@
             var container = document.getElementById('photoPreview');
             container.innerHTML = '';
             if (input.files) {
-                Array.from(input.files).forEach(function(file) {
+                Array.from(input.files).forEach(function(file, index) {
                     var reader = new FileReader();
                     reader.onload = function(e) {
                         var div = document.createElement('div');
                         div.className = 'photo-preview-item';
+                        div.dataset.index = index;
                         var img = document.createElement('img');
                         img.src = e.target.result;
+                        var removeBtn = document.createElement('button');
+                        removeBtn.type = 'button';
+                        removeBtn.className = 'remove-photo';
+                        removeBtn.textContent = '×';
+                        removeBtn.onclick = function() { div.remove(); };
                         div.appendChild(img);
+                        div.appendChild(removeBtn);
                         container.appendChild(div);
                     };
                     reader.readAsDataURL(file);

@@ -1,6 +1,18 @@
+@using SmartphoneShop.Core.Enums
 @model X.PagedList.IPagedList<SmartphoneShop.Core.Entities.Order>
 @{
     ViewData["Title"] = "Управление заказами";
+    string StatusName(OrderStatus s, DeliveryType dt) => s switch
+    {
+        OrderStatus.Pending => "Новый",
+        OrderStatus.Confirmed when dt == DeliveryType.Pickup => "Готов к выдаче",
+        OrderStatus.Confirmed => "Упаковка",
+        OrderStatus.Shipped => "Доставка",
+        OrderStatus.Delivered when dt == DeliveryType.Pickup => "Получен",
+        OrderStatus.Delivered => "Завершён",
+        OrderStatus.Cancelled => "Отменён",
+        _ => s.ToString()
+    };
 }
 
 <style>
@@ -13,14 +25,20 @@
     .status-new { background: rgba(212, 65, 119, 0.15); color: #D44177; }
     .status-pending { background: rgba(212, 65, 119, 0.2); color: #D44177; }
     .status-progress { background: rgba(212, 65, 119, 0.25); color: #D44177; border: 1px solid rgba(212, 65, 119, 0.4); }
-    .status-done { background: rgba(255, 255, 255, 0.1); color: #f0f0f0; }
-    .status-cancelled { background: rgba(100, 100, 100, 0.2); color: #888; }
+    .status-done { background: rgba(212, 65, 119, 0.15); color: #D44177; }
+    .status-cancelled { background: rgba(212, 65, 119, 0.15); color: #D44177; }
+    .status-pickup { background: rgba(212, 65, 119, 0.15); color: #D44177; }
     .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 6px; border: none; cursor: pointer; transition: all 0.2s; }
     .btn-primary { background: #D44177; color: #fff; }
     .btn-primary:hover { background: #b83565; }
     .btn-primary:disabled { background: #555; color: #aaa; cursor: not-allowed; }
     .btn-cancel { background: #3a3a3a; color: #f0f0f0; }
     .btn-cancel:hover { background: #555; }
+    .btn-pickup { background: #2ecc71; color: #fff; }
+    .btn-pickup:hover { background: #27ae60; }
+    .delivery-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; }
+    .delivery-delivery { background: rgba(212, 65, 119, 0.15); color: #D44177; }
+    .delivery-pickup { background: rgba(212, 65, 119, 0.15); color: #D44177; }
     .filter-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
     .filter-link { padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 500; transition: all 0.2s; }
     .filter-link.active { background: #D44177; color: #fff; }
@@ -31,15 +49,6 @@
 <section>
     <div class="container">
         <h2 class="section-title">Управление заказами</h2>
-
-        @if (TempData["Message"] != null)
-        {
-            <div style="padding: 15px; margin-bottom: 20px; background: rgba(46,204,113,0.1); border: 1px solid #2ecc71; border-radius: 8px; color: #2ecc71;">@TempData["Message"]</div>
-        }
-        @if (TempData["Error"] != null)
-        {
-            <div style="padding: 15px; margin-bottom: 20px; background: rgba(231,76,60,0.1); border: 1px solid #e74c3c; border-radius: 8px; color: #e74c3c;">@TempData["Error"]</div>
-        }
 
         <div class="filter-bar">
             <a href="/adminorders" class="filter-link @(ViewBag.Status == null ? "active" : "")">Все</a>
@@ -60,6 +69,7 @@
                             <th>Товары</th>
                             <th>Сумма</th>
                             <th>Дата</th>
+                            <th>Способ</th>
                             <th>Статус</th>
                             <th>Действия</th>
                         </tr>
@@ -67,23 +77,18 @@
                     <tbody>
                         @foreach (var order in Model)
                         {
+                            var isPickup = order.DeliveryType == DeliveryType.Pickup;
                             var sc = order.Status switch {
-                                SmartphoneShop.Core.Enums.OrderStatus.Pending => "status-new",
-                                SmartphoneShop.Core.Enums.OrderStatus.Confirmed => "status-pending",
-                                SmartphoneShop.Core.Enums.OrderStatus.Shipped => "status-progress",
-                                SmartphoneShop.Core.Enums.OrderStatus.Delivered => "status-done",
-                                SmartphoneShop.Core.Enums.OrderStatus.Cancelled => "status-cancelled",
+                                OrderStatus.Pending => "status-new",
+                                OrderStatus.Confirmed when isPickup => "status-pickup",
+                                OrderStatus.Confirmed => "status-pending",
+                                OrderStatus.Shipped => "status-progress",
+                                OrderStatus.Delivered => "status-done",
+                                OrderStatus.Cancelled => "status-cancelled",
                                 _ => ""
                             };
-                            var sn = order.Status switch {
-                                SmartphoneShop.Core.Enums.OrderStatus.Pending => "Новый",
-                                SmartphoneShop.Core.Enums.OrderStatus.Confirmed => "Упаковка",
-                                SmartphoneShop.Core.Enums.OrderStatus.Shipped => "Доставка",
-                                SmartphoneShop.Core.Enums.OrderStatus.Delivered => "Завершён",
-                                SmartphoneShop.Core.Enums.OrderStatus.Cancelled => "Отменён",
-                                _ => order.Status.ToString()
-                            };
-                            var isFinal = order.Status == SmartphoneShop.Core.Enums.OrderStatus.Delivered || order.Status == SmartphoneShop.Core.Enums.OrderStatus.Cancelled;
+                            var sn = StatusName(order.Status, order.DeliveryType);
+                            var isFinal = order.Status == OrderStatus.Delivered || order.Status == OrderStatus.Cancelled;
                             <tr>
                                 <td><strong>#@order.Id</strong></td>
                                 <td>@(order.User?.FullName ?? order.User?.UserName ?? order.ContactName)</td>
@@ -95,6 +100,11 @@
                                 </td>
                                 <td style="color:#D44177;">@order.TotalAmount.ToString("N0") BYN</td>
                                 <td>@order.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                                <td>
+                                    <span class="delivery-badge @(isPickup ? "delivery-pickup" : "delivery-delivery")">
+                                        @(isPickup ? "Самовывоз" : "Доставка")
+                                    </span>
+                                </td>
                                 <td><span class="status-badge @sc">@sn</span></td>
                                 <td>
                                     @if (!isFinal)
@@ -102,17 +112,22 @@
                                         <form method="post" action="/adminorders/updatestatus" style="display:inline;">
                                             @Html.AntiForgeryToken()
                                             <input type="hidden" name="id" value="@order.Id" />
-                                            @if (order.Status == SmartphoneShop.Core.Enums.OrderStatus.Pending)
+                                            @if (order.Status == OrderStatus.Pending)
                                             {
-                                                <button type="submit" name="status" value="Confirmed" class="btn-sm btn-primary">В упаковку</button>
+                                                <button type="submit" name="status" value="Confirmed" class="btn-sm btn-primary">@(isPickup ? "В обработку" : "В упаковку")</button>
                                                 <button type="submit" name="status" value="Cancelled" class="btn-sm btn-cancel" style="margin-left:4px;">Отменить</button>
                                             }
-                                            else if (order.Status == SmartphoneShop.Core.Enums.OrderStatus.Confirmed)
+                                            else if (order.Status == OrderStatus.Confirmed && isPickup)
+                                            {
+                                                <button type="submit" name="status" value="Delivered" class="btn-sm btn-pickup">Выдан</button>
+                                                <button type="submit" name="status" value="Cancelled" class="btn-sm btn-cancel" style="margin-left:4px;">Отменить</button>
+                                            }
+                                            else if (order.Status == OrderStatus.Confirmed)
                                             {
                                                 <button type="submit" name="status" value="Shipped" class="btn-sm btn-primary">В доставку</button>
                                                 <button type="submit" name="status" value="Cancelled" class="btn-sm btn-cancel" style="margin-left:4px;">Отменить</button>
                                             }
-                                            else if (order.Status == SmartphoneShop.Core.Enums.OrderStatus.Shipped)
+                                            else if (order.Status == OrderStatus.Shipped)
                                             {
                                                 <button type="submit" name="status" value="Delivered" class="btn-sm btn-primary">Завершить</button>
                                             }
@@ -120,7 +135,7 @@
                                     }
                                     else
                                     {
-                                        <span style="color:#888;font-size:12px;">Финальный статус</span>
+                                        <span style="color:#888;font-size:12px;">Завершён</span>
                                     }
                                 </td>
                             </tr>

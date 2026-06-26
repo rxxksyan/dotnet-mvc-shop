@@ -46,7 +46,11 @@
                         <div style="display: none; padding-top: 15px; margin-top: 15px; border-top: 1px solid #3a3a3a;">
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
                                 <div>
-                                    <span style="color: #b0b0b0; font-size: 13px;">Адрес:</span>
+                                    <span style="color: #b0b0b0; font-size: 13px;">Способ:</span>
+                                    <p style="margin: 2px 0 0 0;">@(order.DeliveryType == SmartphoneShop.Core.Enums.DeliveryType.Pickup ? "Самовывоз" : "Доставка")</p>
+                                </div>
+                                <div>
+                                    <span style="color: #b0b0b0; font-size: 13px;">@(order.DeliveryType == SmartphoneShop.Core.Enums.DeliveryType.Pickup ? "Пункт" : "Адрес")</span>
                                     <p style="margin: 2px 0 0 0;">@order.DeliveryAddress</p>
                                 </div>
                                 <div>

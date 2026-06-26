@@ -9,7 +9,8 @@ public class Order
     public decimal TotalAmount { get; set; }
     public OrderStatus Status { get; set; } = OrderStatus.Pending;
 
-    public string DeliveryAddress { get; set; } = string.Empty;
+    public DeliveryType DeliveryType { get; set; } = DeliveryType.Delivery;
+    public string? DeliveryAddress { get; set; }
     public string ContactPhone { get; set; } = string.Empty;
     public string ContactName { get; set; } = string.Empty;
     public string? Notes { get; set; }

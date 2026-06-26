@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SmartphoneShop.Core.Entities;
 using SmartphoneShop.Core.Enums;
 using SmartphoneShop.Infrastructure.Data;
 using X.PagedList;
@@ -46,11 +47,10 @@ public class AdminOrdersController : Controller
         if (order == null) return NotFound();
 
         var current = order.Status;
-        var allowed = GetAllowedNextStatuses(current);
+        var allowed = GetAllowedNextStatuses(current, order.DeliveryType);
 
         if (!allowed.Contains(status))
         {
-            TempData["Error"] = $"Нельзя изменить статус с '{GetName(current)}' на '{GetName(status)}'.";
             return RedirectToAction(nameof(Index));
         }
 
@@ -59,20 +59,30 @@ public class AdminOrdersController : Controller
         var newIdx = flow.IndexOf(status);
         if (status != OrderStatus.Cancelled && (newIdx < curIdx || newIdx > curIdx + 1))
         {
-            TempData["Error"] = "Нельзя перескакивать или откатывать статус.";
-            return RedirectToAction(nameof(Index));
+            if (!(order.DeliveryType == DeliveryType.Pickup && current == OrderStatus.Confirmed && status == OrderStatus.Delivered))
+            {
+                return RedirectToAction(nameof(Index));
+            }
         }
 
         order.Status = status;
         order.UpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
 
-        TempData["Message"] = $"Заказ #{id} — статус изменён на '{GetName(status)}'";
         return RedirectToAction(nameof(Index));
     }
 
-    private static List<OrderStatus> GetAllowedNextStatuses(OrderStatus current)
+    private static List<OrderStatus> GetAllowedNextStatuses(OrderStatus current, DeliveryType dt)
     {
+        if (dt == DeliveryType.Pickup)
+        {
+            return current switch
+            {
+                OrderStatus.Pending => new() { OrderStatus.Confirmed, OrderStatus.Cancelled },
+                OrderStatus.Confirmed => new() { OrderStatus.Delivered, OrderStatus.Cancelled },
+                _ => new()
+            };
+        }
         return current switch
         {
             OrderStatus.Pending => new() { OrderStatus.Confirmed, OrderStatus.Cancelled },
@@ -82,13 +92,15 @@ public class AdminOrdersController : Controller
         };
     }
 
-    private static string GetName(OrderStatus s) => s switch
+    public static string GetStatusDisplayName(OrderStatus s, DeliveryType dt) => (s, dt) switch
     {
-        OrderStatus.Pending => "Новый",
-        OrderStatus.Confirmed => "Упаковка",
-        OrderStatus.Shipped => "Доставка",
-        OrderStatus.Delivered => "Завершён",
-        OrderStatus.Cancelled => "Отменён",
+        (OrderStatus.Pending, _) => "Новый",
+        (OrderStatus.Confirmed, DeliveryType.Pickup) => "Готов к выдаче",
+        (OrderStatus.Confirmed, DeliveryType.Delivery) => "Упаковка",
+        (OrderStatus.Shipped, DeliveryType.Delivery) => "Доставка",
+        (OrderStatus.Delivered, DeliveryType.Pickup) => "Получен",
+        (OrderStatus.Delivered, DeliveryType.Delivery) => "Завершён",
+        (OrderStatus.Cancelled, _) => "Отменён",
         _ => s.ToString()
     };
 }

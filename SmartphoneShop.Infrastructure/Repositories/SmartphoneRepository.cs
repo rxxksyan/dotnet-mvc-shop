@@ -108,6 +108,16 @@ public class SmartphoneRepository : GenericRepository<Smartphone>, ISmartphoneRe
         return await _dbSet.AnyAsync(s => s.Id == id);
     }
 
+    public async Task<IEnumerable<string>> GetDistinctBrandsAsync()
+    {
+        return await _dbSet
+            .Where(s => !string.IsNullOrEmpty(s.Brand))
+            .Select(s => s.Brand)
+            .Distinct()
+            .OrderBy(b => b)
+            .ToListAsync();
+    }
+
     public async Task DeleteAsync(int id)
     {
         var smartphone = await _dbSet.FindAsync(id);

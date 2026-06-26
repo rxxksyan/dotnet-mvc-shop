@@ -73,9 +73,41 @@
             </div>
             
             <div class="contact-form">
-                <h3>Данные доставки</h3>
+                <h3>Способ получения</h3>
                 <form method="post" action="/order/create">
                     @Html.AntiForgeryToken()
+
+                    <div class="delivery-options">
+                        <label class="delivery-option active">
+                            <input type="radio" name="deliveryType" value="Delivery" checked onchange="toggleDelivery()" />
+                            <div class="delivery-option-icon">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#D44177" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="1" y="3" width="15" height="13"></rect>
+                                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                                    <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                                    <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                                </svg>
+                            </div>
+                            <div class="delivery-option-text">
+                                <span class="delivery-option-title">Доставка</span>
+                                <span class="delivery-option-desc">Курьером по указанному адресу</span>
+                            </div>
+                        </label>
+                        <label class="delivery-option">
+                            <input type="radio" name="deliveryType" value="Pickup" onchange="toggleDelivery()" />
+                            <div class="delivery-option-icon">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#D44177" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                    <circle cx="12" cy="10" r="3"></circle>
+                                </svg>
+                            </div>
+                            <div class="delivery-option-text">
+                                <span class="delivery-option-title">Самовывоз</span>
+                                <span class="delivery-option-desc">Заберите из магазина самостоятельно</span>
+                            </div>
+                        </label>
+                    </div>
+
                     <div class="form-group">
                         <label>ФИО получателя</label>
                         <input type="text" name="contactName" required placeholder="Иван Иванов" value="@ViewBag.UserFullName" />
@@ -86,7 +118,7 @@
                         <input type="tel" name="contactPhone" required placeholder="+375 (29) 123-45-67" value="@ViewBag.UserPhone" />
                     </div>
                     
-                    <div class="form-group">
+                    <div class="form-group" id="address-group">
                         <label>Адрес доставки</label>
                         <textarea name="deliveryAddress" required placeholder="г. Минск, ул. Примерная, д. 1, кв. 1" rows="3">@ViewBag.UserAddress</textarea>
                     </div>
@@ -99,6 +131,107 @@
                     <button type="submit" class="cta-button" style="width: 100%; margin-top: 20px;">Подтвердить заказ</button>
                 </form>
             </div>
+
+            </div>
         </div>
     </div>
 </section>
+
+<style>
+.delivery-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 24px;
+}
+.delivery-option {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px;
+    background: #1a1a1a;
+    border: 1px solid #3a3a3a;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    position: relative;
+}
+.delivery-option:hover {
+    border-color: rgba(212, 65, 119, 0.3);
+    background: #222;
+}
+.delivery-option.active {
+    border-color: #D44177;
+    background: rgba(212, 65, 119, 0.08);
+    box-shadow: 0 0 0 1px rgba(212, 65, 119, 0.2);
+}
+.delivery-option input[type="radio"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid #555;
+    border-radius: 50%;
+    margin: 0;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+    position: relative;
+}
+.delivery-option input[type="radio"]:checked {
+    border-color: #D44177;
+    background: #D44177;
+}
+.delivery-option input[type="radio"]:checked::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 8px;
+    height: 8px;
+    background: #fff;
+    border-radius: 50%;
+}
+.delivery-option-icon {
+    width: 44px;
+    height: 44px;
+    background: rgba(212, 65, 119, 0.1);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.delivery-option-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.delivery-option-title {
+    font-weight: 600;
+    font-size: 15px;
+    color: #f0f0f0;
+}
+.delivery-option-desc {
+    font-size: 13px;
+    color: #888;
+}
+</style>
+
+<script>
+document.querySelectorAll('.delivery-option').forEach(function(el) {
+    el.addEventListener('click', function() {
+        document.querySelectorAll('.delivery-option').forEach(function(o) { o.classList.remove('active'); });
+        this.classList.add('active');
+        toggleDelivery();
+    });
+});
+function toggleDelivery() {
+    var pickup = document.querySelector('input[name="deliveryType"]:checked').value === 'Pickup';
+    var group = document.getElementById('address-group');
+    if (group) {
+        group.style.display = pickup ? 'none' : '';
+        var textarea = group.querySelector('textarea');
+        if (textarea) textarea.required = !pickup;
+    }
+}
+</script>

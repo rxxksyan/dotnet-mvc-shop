@@ -3,6 +3,48 @@
     ViewData["Title"] = Model.ModelName;
 }
 
+<style>
+.main-image-wrapper {
+    width: 100%;
+    height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+}
+.main-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 8px;
+    transition: opacity 0.2s;
+}
+.thumb-gallery {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    overflow-x: auto;
+    width: 100%;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.thumb-gallery img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color 0.2s;
+}
+.thumb-gallery img:hover,
+.thumb-gallery img.active {
+    border-color: #D44177;
+}
+</style>
+
 <section>
     <div class="container">
         <div class="product-detail">
@@ -108,8 +150,7 @@
                 @if (!string.IsNullOrEmpty(Model.OS)) { <tr><td>ОС</td><td>@Model.OS</td></tr> }
                 @if (Model.BatteryCapacity.HasValue) { <tr><td>Батарея</td><td>@Model.BatteryCapacity mAh</td></tr> }
                 @if (Model.Weight.HasValue) { <tr><td>Вес</td><td>@Model.Weight г</td></tr> }
-                <tr><td>NFC</td><td>@(Model.NFC ? "Да" : "Нет")</td></tr>
-                <tr><td>Беспроводная зарядка</td><td>@(Model.WirelessCharging ? "Да" : "Нет")</td></tr>
+
                 @if (!string.IsNullOrEmpty(Model.WaterResistance)) { <tr><td>Влагозащита</td><td>@Model.WaterResistance</td></tr> }
                 @if (!string.IsNullOrEmpty(Model.Colors))
                 {

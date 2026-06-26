@@ -49,21 +49,18 @@
                             <span>@(((double?)ViewBag.Ratings?[phone.Id])?.ToString("0.0") ?? "0.0")</span>
                         </div>
                     </div>
-                    <p class="description">@(phone.Description?.Length > 80 ? phone.Description.Substring(0, 80) + "..." : phone.Description)</p>
+                    <p class="description" style="height: 18px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">@phone.Description</p>
                     <p class="specs">@phone.ScreenSize" • @(phone.RAM ?? 0) ГБ • @(phone.Storage ?? 0) ГБ</p>
                     <p class="price">@phone.Price.ToString("N0") BYN</p>
                     <div class="product-actions" onclick="event.preventDefault(); event.stopPropagation();">
-                        <form method="post" action="/cart/add" style="flex: 1;">
-                            <input type="hidden" name="smartphoneId" value="@phone.Id" />
-                            <button type="submit" class="cta-button" @(!phone.IsInStock ? "disabled" : "")>
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
-                                    <line x1="3" y1="6" x2="21" y2="6"></line>
-                                    <path d="M16 10a4 4 0 0 1-8 0"></path>
-                                </svg>
-                                В корзину
-                            </button>
-                        </form>
+                        <button type="button" class="cta-button" style="flex: 1;" onclick="addToCart(@phone.Id)" @(!phone.IsInStock ? "disabled" : "")>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                                <line x1="3" y1="6" x2="21" y2="6"></line>
+                                <path d="M16 10a4 4 0 0 1-8 0"></path>
+                            </svg>
+                            В корзину
+                        </button>
                         <button type="button" class="comparison-btn @(ViewBag.ComparisonIds != null && ((HashSet<int>)ViewBag.ComparisonIds).Contains(phone.Id) ? "in-comparison" : "")" style="width: 36px; height: 36px; border: none; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: @(ViewBag.ComparisonIds != null && ((HashSet<int>)ViewBag.ComparisonIds).Contains(phone.Id) ? "#D44177" : "#3a3a3a"); color: #f0f0f0; flex-shrink: 0;" data-id="@phone.Id" onclick="addToComparison(@phone.Id, this)">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <line x1="18" y1="20" x2="18" y2="10"></line>
@@ -77,5 +74,3 @@
         </div>
     </div>
 </section>
-
-
