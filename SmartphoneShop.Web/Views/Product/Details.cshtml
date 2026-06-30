@@ -87,10 +87,20 @@
                 }
             </div>
             <div class="product-detail-info">
+                @if (TempData["Error"] != null)
+                {
+                    <div style="padding: 12px 16px; background: rgba(231,76,60,0.1); border: 1px solid #e74c3c; border-radius: 8px; color: #e74c3c; font-size: 13px; margin-bottom: 16px;">
+                        @TempData["Error"]
+                    </div>
+                }
                 <h1 class="product-title">@Model.Brand @Model.ModelName</h1>
-                @if (!Model.IsInStock)
+                @if (Model.Quantity <= 0)
                 {
                     <div style="display: inline-block; background: rgba(100,100,100,0.3); color: #b0b0b0; padding: 4px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; margin-bottom: 12px;">Нет в наличии</div>
+                }
+                else
+                {
+                    <div style="display: inline-block; background: rgba(46,204,113,0.15); color: #2ecc71; padding: 4px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; margin-bottom: 12px;">В наличии: @Model.Quantity шт.</div>
                 }
                 <div class="product-detail-price">
                     @Model.Price.ToString("N0") BYN
@@ -108,7 +118,7 @@
                     </div>
                 }
                 <div class="product-detail-actions">
-                    <button type="button" class="cta-button" onclick="addToCart(@Model.Id)" @(!Model.IsInStock ? "disabled" : "")>
+                    <button type="button" class="cta-button" onclick="addToCart(@Model.Id)" @(Model.Quantity <= 0 ? "disabled" : "")>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
                             <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -182,9 +192,12 @@
         @if (User.Identity?.IsAuthenticated == true)
         {
             var hasReview = (bool)ViewBag.UserHasReview;
+            var hasPurchased = (bool)ViewBag.UserHasPurchased;
             var reviewId = ViewBag.UserReviewId as int?;
             var reviewComment = ViewBag.UserReviewComment as string;
             var reviewRating = ViewBag.UserReviewRating as int?;
+            if (hasReview || hasPurchased)
+            {
             <div class="service-card" style="margin-bottom: 24px; max-width: 600px; margin-left: auto; margin-right: auto;">
                 <h4 style="margin-bottom: 16px; color: #f0f0f0; text-align: center;">@(hasReview ? "Редактировать отзыв" : "Оставить отзыв")</h4>
                 <form method="post" action="/product/@(hasReview ? "updatereview" : "addreview")" id="reviewForm">
@@ -215,6 +228,13 @@
                     </div>
                 </form>
             </div>
+            }
+            else
+            {
+            <div class="service-card" style="margin-bottom: 24px; max-width: 600px; margin-left: auto; margin-right: auto; text-align: center;">
+                <p style="color: #999; margin: 0;">Отзыв можно оставить после покупки товара</p>
+            </div>
+            }
         }
         
         @if (ViewBag.Reviews != null)

@@ -37,6 +37,8 @@
 
 <section>
     <div class="container">
+        @if (Model.Status != SmartphoneShop.Core.Enums.OrderStatus.Cancelled)
+        {
         <div id="receipt" style="width: 800px; margin: 0 auto;">
             <div style="background: #1a1a1a; padding: 40px 48px; color: #e0e0e0;">
 
@@ -131,79 +133,124 @@
 
             </div>
         </div>
+        }
 
         <div class="receipt-actions" id="receiptActions" style="margin-top: 30px;">
-            <button type="button" class="cta-button" onclick="downloadPDF(event)">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
-                    <path d="M6 9V2h12v7"></path>
-                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-                    <rect x="6" y="14" width="12" height="8"></rect>
-                </svg>
-                Скачать чек (PDF)
-            </button>
+            @if (Model.Status == SmartphoneShop.Core.Enums.OrderStatus.Cancelled)
+            {
+                <div style="text-align: center; padding: 20px; background: rgba(231, 76, 60, 0.1); border: 1px solid #e74c3c; border-radius: 8px; color: #e74c3c; width: 100%;">
+                    Заказ отменён. Скачивание документов недоступно.
+                </div>
+            }
+            else
+            {
+                <button type="button" class="cta-button" data-original-text="Скачать чек (PDF)" onclick="downloadDocument('receipt', 'receipt-order-@(Model.Id).pdf')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
+                        <path d="M6 9V2h12v7"></path>
+                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                        <rect x="6" y="14" width="12" height="8"></rect>
+                    </svg>
+                    Скачать чек (PDF)
+                </button>
+                <button type="button" class="cta-button" style="background: #3a3a3a;" data-original-text="Гарантийный талон" onclick="downloadDocument('warranty-@Model.Id', 'warranty-order-@(Model.Id).pdf')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                    </svg>
+                    Гарантийный талон
+                </button>
+            }
             <a href="/order/history" class="cta-button">Мои заказы</a>
             <a href="/catalog" class="cta-button" style="background: #3a3a3a;">Продолжить покупки</a>
         </div>
+
+        @if (Model.Status != SmartphoneShop.Core.Enums.OrderStatus.Cancelled)
+        {
+        <div id="warranty-@Model.Id" style="display:none; width:800px; background:#1a1a1a; padding:40px 48px; color:#e0e0e0; font-family: Arial, sans-serif;">
+            <div style="text-align:center; margin-bottom:32px; padding-bottom:20px; border-bottom:2px solid #D44177;">
+                <div style="color:#D44177; font-weight:900; font-size:30px; letter-spacing:5px;">RXXMRKT</div>
+                <div style="color:#999; font-size:11px; margin-top:6px; letter-spacing:2px;">ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ</div>
+                <div style="color:#888; font-size:11px; margin-top:2px;">УНП 193654321, р/с BY65ALFA30123456780000000</div>
+                <div style="color:#888; font-size:11px;">г. Минск, ул. Сурганова, 57Б</div>
+            </div>
+            <div style="text-align:center; margin-bottom:36px;">
+                <div style="font-size:28px; font-weight:900; color:#fff; letter-spacing:3px;">ГАРАНТИЙНЫЙ ТАЛОН</div>
+                <div style="color:#999; font-size:13px; margin-top:8px;">№ @Model.Id от @Model.CreatedAt.ToString("dd.MM.yyyy")</div>
+            </div>
+            <div style="background:#242424; border-radius:8px; padding:24px; margin-bottom:24px;">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                    <div>
+                        <div style="color:#666; font-size:10px; letter-spacing:1px; margin-bottom:6px;">ПОКУПАТЕЛЬ</div>
+                        <div style="color:#e0e0e0; font-weight:600; font-size:15px;">@Model.ContactName</div>
+                        <div style="color:#999; font-size:13px; margin-top:4px;">тел. @Model.ContactPhone</div>
+                    </div>
+                    <div>
+                        <div style="color:#666; font-size:10px; letter-spacing:1px; margin-bottom:6px;">ДАТА ПОКУПКИ</div>
+                        <div style="color:#e0e0e0; font-weight:600; font-size:15px;">@Model.CreatedAt.ToString("dd.MM.yyyy")</div>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-bottom:24px;">
+                <div style="color:#666; font-size:10px; letter-spacing:1px; margin-bottom:12px;">ПРИОБРЕТЁННЫЕ ТОВАРЫ</div>
+                <table style="width:100%; border-collapse:collapse; font-size:13px;">
+                    <thead>
+                        <tr style="background:#242424; border-bottom:2px solid #D44177;">
+                            <th style="padding:12px 14px; text-align:left; color:#D44177; font-size:10px; letter-spacing:1px;">НАИМЕНОВАНИЕ</th>
+                            <th style="padding:12px 14px; text-align:center; color:#D44177; font-size:10px; letter-spacing:1px; width:70px;">КОЛ-ВО</th>
+                            <th style="padding:12px 14px; text-align:right; color:#D44177; font-size:10px; letter-spacing:1px; width:120px;">ЦЕНА</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Items)
+                        {
+                            <tr style="border-bottom:1px solid #2a2a2a;">
+                                <td style="padding:10px 14px; color:#e0e0e0; font-weight:600;">@(item.Smartphone?.ModelName ?? "Товар")</td>
+                                <td style="padding:10px 14px; text-align:center; color:#b0b0b0;">@item.Quantity</td>
+                                <td style="padding:10px 14px; text-align:right; color:#fff; font-weight:700;">@item.PriceAtPurchase.ToString("N0") BYN</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:36px;">
+                <div>
+                    <div style="color:#666; font-size:10px; letter-spacing:1px; margin-bottom:8px;">СРОК ГАРАНТИИ</div>
+                    <div style="color:#D44177; font-weight:700; font-size:18px;">12 месяцев</div>
+                    <div style="color:#999; font-size:12px; margin-top:4px;">с @Model.CreatedAt.ToString("dd.MM.yyyy") по @Model.CreatedAt.AddMonths(12).ToString("dd.MM.yyyy")</div>
+                </div>
+                <div>
+                    <div style="color:#666; font-size:10px; letter-spacing:1px; margin-bottom:8px;">СУММА ПОКУПКИ</div>
+                    <div style="color:#D44177; font-weight:700; font-size:18px;">@Model.TotalAmount.ToString("N0") BYN</div>
+                </div>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-top:48px; padding-top:24px; border-top:1px solid #2a2a2a;">
+                <div>
+                    <div style="color:#666; font-size:10px; letter-spacing:1px; margin-bottom:30px;">ПРОДАВЕЦ</div>
+                    <div style="border-top:1px solid #555; padding-top:8px; color:#999; font-size:12px;">М.П.</div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="color:#666; font-size:10px; letter-spacing:1px; margin-bottom:30px;">ПОКУПАТЕЛЬ</div>
+                    <div style="border-top:1px solid #555; padding-top:8px; color:#999; font-size:12px;">@Model.ContactName</div>
+                </div>
+            </div>
+            <div style="background:#242424; border-radius:8px; padding:24px; margin-top:36px;">
+                <div style="color:#666; font-size:10px; letter-spacing:1px; margin-bottom:10px;">ГАРАНТИЙНЫЕ ОБЯЗАТЕЛЬСТВА</div>
+                <p style="color:#e0e0e0; font-size:14px; line-height:1.7; margin:0 0 12px 0;">
+                    ООО «RXXMRKT» гарантирует работоспособность приобретённого товара в течение <strong style="color:#D44177;">12 (двенадцати) месяцев</strong> с даты покупки.
+                </p>
+                <p style="color:#b0b0b0; font-size:13px; line-height:1.6; margin:0 0 12px 0;">
+                    Гарантия распространяется на дефекты, возникшие по вине производителя. Гарантийное обслуживание осуществляется в авторизованном сервисном центре.
+                </p>
+                <p style="color:#b0b0b0; font-size:13px; line-height:1.6; margin:0;">
+                    Гарантия не распространяется на механические повреждения, следы воздействия жидкости, а также на повреждения, вызванные неправильной эксплуатацией.
+                </p>
+            </div>
+        </div>
+        }
     </div>
 </section>
 
 @section Scripts {
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script>
-    function downloadPDF(e) {
-        const btn = e.currentTarget;
-        btn.disabled = true;
-        btn.textContent = 'Скачивание...';
-
-        html2canvas(document.getElementById('receipt'), {
-            scale: 3,
-            backgroundColor: '#1a1a1a',
-            allowTaint: false,
-            useCORS: true,
-            logging: false
-        }).then(function(canvas) {
-            const imgData = canvas.toDataURL('image/jpeg', 0.97);
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('p', 'mm', 'a4');
-            const pageWidth = doc.internal.pageSize.getWidth();
-            const pageHeight = doc.internal.pageSize.getHeight();
-            const usableWidth = pageWidth;
-            const imgHeight = (canvas.height * usableWidth) / canvas.width;
-            let heightLeft = imgHeight;
-            let position = 0;
-
-            doc.setFillColor(26, 26, 26);
-            doc.rect(0, 0, pageWidth, pageHeight, 'F');
-            doc.addImage(imgData, 'JPEG', 0, 0, usableWidth, imgHeight);
-            heightLeft -= pageHeight;
-
-            while (heightLeft > 0) {
-                position = -(imgHeight - heightLeft);
-                doc.addPage();
-                doc.setFillColor(26, 26, 26);
-                doc.rect(0, 0, pageWidth, pageHeight, 'F');
-                doc.addImage(imgData, 'JPEG', 0, position, usableWidth, imgHeight);
-                heightLeft -= pageHeight;
-            }
-
-            doc.save('receipt-order-@(Model.Id).pdf');
-            btn.disabled = false;
-            btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
-                <path d="M6 9V2h12v7"></path>
-                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-                <rect x="6" y="14" width="12" height="8"></rect>
-            </svg> Скачать чек (PDF)`;
-        }).catch(function(err) {
-            console.error('PDF generation failed:', err);
-            alert('Не удалось сгенерировать PDF. Попробуйте ещё раз.');
-            btn.disabled = false;
-            btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
-                <path d="M6 9V2h12v7"></path>
-                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-                <rect x="6" y="14" width="12" height="8"></rect>
-            </svg> Скачать чек (PDF)`;
-        });
-    }
-    </script>
 }

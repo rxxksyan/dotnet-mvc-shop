@@ -94,12 +94,21 @@ public class OrderController : Controller
         }
 
         Order order;
+        var smartphonesToDecrement = new List<(int smartphoneId, int quantity)>();
 
         var buyNowId = HttpContext.Session.GetInt32("BuyNowSmartphoneId");
         if (buyNowId.HasValue)
         {
             var smartphone = await _smartphoneRepo.GetByIdAsync(buyNowId.Value);
             if (smartphone == null) return NotFound();
+
+            if (smartphone.Quantity < 1)
+            {
+                TempData["Error"] = "Товара нет в наличии";
+                return RedirectToAction("Checkout");
+            }
+
+            smartphonesToDecrement.Add((smartphone.Id, 1));
 
             order = new Order
             {
@@ -135,6 +144,22 @@ public class OrderController : Controller
                 return RedirectToAction("Index", "Cart");
             }
 
+            foreach (var item in cart.Items)
+            {
+                var smartphone = await _smartphoneRepo.GetByIdAsync(item.SmartphoneId);
+                if (smartphone == null)
+                {
+                    TempData["Error"] = "Один из товаров недоступен";
+                    return RedirectToAction("Checkout");
+                }
+                if (smartphone.Quantity < item.Quantity)
+                {
+                    TempData["Error"] = $"Недостаточно товара \"{smartphone.ModelName}\" на складе (доступно: {smartphone.Quantity} шт.)";
+                    return RedirectToAction("Checkout");
+                }
+                smartphonesToDecrement.Add((smartphone.Id, item.Quantity));
+            }
+
             order = new Order
             {
                 UserId = userId,
@@ -157,6 +182,17 @@ public class OrderController : Controller
         }
 
         await _orderRepo.AddAsync(order);
+
+        foreach (var (smartphoneId, quantity) in smartphonesToDecrement)
+        {
+            var smartphone = await _smartphoneRepo.GetByIdAsync(smartphoneId);
+            if (smartphone != null)
+            {
+                smartphone.Quantity -= quantity;
+                await _smartphoneRepo.UpdateAsync(smartphone);
+            }
+        }
+
         return RedirectToAction("Success", new { id = order.Id });
     }
 

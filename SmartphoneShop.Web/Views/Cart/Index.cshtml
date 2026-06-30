@@ -1,6 +1,7 @@
 @model SmartphoneShop.Core.Entities.Cart
 @{
     ViewData["Title"] = "Корзина";
+    var hasStockIssue = Model.Items.Any(i => i.Quantity > i.Smartphone.Quantity || i.Smartphone.Quantity <= 0);
 }
 
 <section>
@@ -50,9 +51,17 @@
                                             <input type="hidden" name="itemId" value="@item.Id" />
                                             <button type="submit" name="quantity" value="@(item.Quantity - 1)" class="qty-btn" @(item.Quantity <= 1 ? "disabled" : "")>−</button>
                                             <span class="qty-value">@item.Quantity</span>
-                                            <button type="submit" name="quantity" value="@(item.Quantity + 1)" class="qty-btn">+</button>
+                                            <button type="submit" name="quantity" value="@(item.Quantity + 1)" class="qty-btn" @(item.Quantity >= item.Smartphone.Quantity ? "disabled" : "")>+</button>
                                         </form>
                                     </div>
+                                    @if (item.Smartphone.Quantity > 0 && item.Quantity >= item.Smartphone.Quantity)
+                                    {
+                                        <p style="color: #e67e22; font-size: 11px; margin: 4px 0 0 0;">На складе осталось @item.Smartphone.Quantity шт.</p>
+                                    }
+                                    @if (item.Smartphone.Quantity <= 0)
+                                    {
+                                        <p style="color: #e74c3c; font-size: 11px; margin: 4px 0 0 0;">Нет в наличии</p>
+                                    }
                                     <p class="item-total">@((item.Smartphone.Price * item.Quantity).ToString("N0")) BYN</p>
                                     <form method="post" action="/cart/remove">
                                         @Html.AntiForgeryToken()
@@ -75,8 +84,19 @@
                     <div class="summary-card">
                         <p><strong>Товаров:</strong> @Model.TotalItems</p>
                         <p class="total-price">@Model.TotalAmount.ToString("N0") BYN</p>
+                        @if (hasStockIssue)
+                        {
+                            <p style="color: #e74c3c; font-size: 13px; margin: 10px 0;">Есть товары с недостаточным количеством на складе. Уменьшите количество или удалите их для оформления заказа.</p>
+                        }
                         <div class="summary-actions">
-                            <a href="/order/checkout" class="cta-button">Оформить заказ</a>
+                            @if (hasStockIssue)
+                            {
+                                <span class="cta-button" style="opacity: 0.5; cursor: not-allowed; pointer-events: none;">Оформить заказ</span>
+                            }
+                            else
+                            {
+                                <a href="/order/checkout" class="cta-button">Оформить заказ</a>
+                            }
                             <form method="post" action="/cart/clear">
                                 @Html.AntiForgeryToken()
                                 <button type="submit" class="cta-button" style="background: #3a3a3a;">Очистить корзину</button>

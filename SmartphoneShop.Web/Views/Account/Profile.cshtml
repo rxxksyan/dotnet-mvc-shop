@@ -147,7 +147,177 @@
                                             <strong>Итого:</strong>
                                             <strong style="color: #D44177; font-size: 18px;">@order.TotalAmount.ToString("N0") BYN</strong>
                                         </div>
+                                        <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+                                            @if (order.Status == SmartphoneShop.Core.Enums.OrderStatus.Cancelled)
+                                            {
+                                                <p style="color: #e74c3c; font-size: 13px;">Заказ отменён. Документы недоступны.</p>
+                                            }
+                                            else
+                                            {
+                                                <button type="button" class="cta-button" style="font-size: 13px; padding: 8px 16px;" data-original-text="Скачать чек" onclick="downloadDocument('receipt-p-@order.Id', 'receipt-order-@(order.Id).pdf')">Скачать чек</button>
+                                                <button type="button" class="cta-button" style="font-size: 13px; padding: 8px 16px; background: #3a3a3a;" data-original-text="Гарантийный талон" onclick="downloadDocument('warranty-p-@order.Id', 'warranty-order-@(order.Id).pdf')">Гарантийный талон</button>
+                                            }
+                                        </div>
                                     </div>
+
+                                    @if (order.Status != SmartphoneShop.Core.Enums.OrderStatus.Cancelled)
+                                    {
+                                    <div id="receipt-p-@order.Id" style="display:none; width:800px; background:#1a1a1a; padding:40px 48px; color:#e0e0e0; font-family: Arial, sans-serif;">
+                                        <div style="text-align:center; margin-bottom:32px; padding-bottom:20px; border-bottom:2px solid #D44177;">
+                                            <div style="color:#D44177; font-weight:900; font-size:30px; letter-spacing:5px;">RXXMRKT</div>
+                                            <div style="color:#999; font-size:11px; margin-top:6px; letter-spacing:2px;">ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ</div>
+                                            <div style="color:#888; font-size:11px; margin-top:2px;">УНП 193654321, р/с BY65ALFA30123456780000000</div>
+                                            <div style="color:#888; font-size:11px;">г. Минск, ул. Сурганова, 57Б</div>
+                                        </div>
+                                        <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:28px;">
+                                            <div>
+                                                <div style="color:#666; font-size:10px; letter-spacing:1px;">ДОКУМЕНТ</div>
+                                                <div style="font-size:22px; font-weight:800; color:#fff; margin-top:4px;">ТОВАРНЫЙ ЧЕК №@order.Id</div>
+                                            </div>
+                                            <div style="text-align:right;">
+                                                <div style="color:#999; font-size:13px;">@order.CreatedAt.ToString("dd.MM.yyyy")</div>
+                                                <div style="color:#999; font-size:13px;">@order.CreatedAt.ToString("HH:mm")</div>
+                                            </div>
+                                        </div>
+                                        <div style="display:flex; gap:24px; margin-bottom:28px;">
+                                            <div style="flex:1; background:#242424; border-radius:8px; padding:16px 20px;">
+                                                <div style="color:#666; font-size:10px; letter-spacing:1px; margin-bottom:8px;">ПЛАТЕЛЬЩИК</div>
+                                                <div style="color:#e0e0e0; font-weight:600;">@order.ContactName</div>
+                                                <div style="color:#999; font-size:13px; margin-top:2px;">тел. @order.ContactPhone</div>
+                                            </div>
+                                            <div style="flex:1; background:#242424; border-radius:8px; padding:16px 20px;">
+                                                <div style="color:#666; font-size:10px; letter-spacing:1px; margin-bottom:8px;">СПОСОБ ПОЛУЧЕНИЯ</div>
+                                                <div style="color:#e0e0e0; font-weight:600;">@(order.DeliveryType == SmartphoneShop.Core.Enums.DeliveryType.Pickup ? "Самовывоз" : "Доставка")</div>
+                                                <div style="color:#999; font-size:13px; margin-top:2px;">@order.DeliveryAddress</div>
+                                            </div>
+                                            <div style="flex:1; background:#242424; border-radius:8px; padding:16px 20px;">
+                                                <div style="color:#666; font-size:10px; letter-spacing:1px; margin-bottom:8px;">СТАТУС</div>
+                                                <div style="color:#D44177; font-weight:700; font-size:13px;">@(order.Status == SmartphoneShop.Core.Enums.OrderStatus.Delivered ? "ДОСТАВЛЕН" : order.Status == SmartphoneShop.Core.Enums.OrderStatus.Confirmed ? "ПОДТВЕРЖДЁН" : order.Status == SmartphoneShop.Core.Enums.OrderStatus.Shipped ? "ОТПРАВЛЕН" : order.Status == SmartphoneShop.Core.Enums.OrderStatus.Cancelled ? "ОТМЕНЁН" : "ОФОРМЛЕН")</div>
+                                            </div>
+                                        </div>
+                                        <div style="margin-bottom:24px;">
+                                            <table style="width:100%; border-collapse:collapse; font-size:13px;">
+                                                <thead>
+                                                    <tr style="background:#242424; border-bottom:2px solid #D44177;">
+                                                        <th style="padding:12px 14px; text-align:left; color:#D44177; font-size:10px; letter-spacing:1px;">НАИМЕНОВАНИЕ</th>
+                                                        <th style="padding:12px 14px; text-align:center; color:#D44177; font-size:10px; letter-spacing:1px; width:70px;">КОЛ-ВО</th>
+                                                        <th style="padding:12px 14px; text-align:right; color:#D44177; font-size:10px; letter-spacing:1px; width:100px;">ЦЕНА</th>
+                                                        <th style="padding:12px 14px; text-align:right; color:#D44177; font-size:10px; letter-spacing:1px; width:120px;">СУММА</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach (var item in order.Items)
+                                                    {
+                                                        <tr style="border-bottom:1px solid #2a2a2a;">
+                                                            <td style="padding:10px 14px; color:#e0e0e0; font-weight:600;">@item.Smartphone.ModelName</td>
+                                                            <td style="padding:10px 14px; text-align:center; color:#b0b0b0;">@item.Quantity</td>
+                                                            <td style="padding:10px 14px; text-align:right; color:#b0b0b0;">@item.PriceAtPurchase.ToString("N0")</td>
+                                                            <td style="padding:10px 14px; text-align:right; color:#fff; font-weight:700;">@item.TotalPrice.ToString("N0") BYN</td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div style="background:#242424; border-radius:8px; padding:24px; margin-bottom:28px;">
+                                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                                <div>
+                                                    <div style="color:#888; font-size:11px; letter-spacing:1px; margin-bottom:2px;">ИТОГО К ОПЛАТЕ</div>
+                                                    <div style="color:#999; font-size:12px;">@order.Items.Count() @(order.Items.Count() == 1 ? "позиция" : "позиции(ий)")</div>
+                                                </div>
+                                                <div style="text-align:right;">
+                                                    <div style="font-size:32px; font-weight:900; color:#D44177;">@order.TotalAmount.ToString("N0")</div>
+                                                    <div style="color:#D44177; font-size:14px; font-weight:600; margin-top:2px;">BYN</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div style="text-align:center; padding-top:24px; border-top:1px solid #2a2a2a;">
+                                            <div style="color:#D44177; font-size:24px; font-weight:900; letter-spacing:3px; margin-bottom:4px;">RXXMRKT</div>
+                                            <div style="color:#555; font-size:11px;">Спасибо за покупку!</div>
+                                            <div style="color:#555; font-size:10px; margin-top:2px;">Возврат и обмен в течение 14 дней при наличии чека</div>
+                                        </div>
+                                    </div>
+
+                                    <div id="warranty-p-@order.Id" style="display:none; width:800px; background:#1a1a1a; padding:40px 48px; color:#e0e0e0; font-family: Arial, sans-serif;">
+                                        <div style="text-align:center; margin-bottom:32px; padding-bottom:20px; border-bottom:2px solid #D44177;">
+                                            <div style="color:#D44177; font-weight:900; font-size:30px; letter-spacing:5px;">RXXMRKT</div>
+                                            <div style="color:#999; font-size:11px; margin-top:6px; letter-spacing:2px;">ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ</div>
+                                            <div style="color:#888; font-size:11px; margin-top:2px;">УНП 193654321, р/с BY65ALFA30123456780000000</div>
+                                            <div style="color:#888; font-size:11px;">г. Минск, ул. Сурганова, 57Б</div>
+                                        </div>
+                                        <div style="text-align:center; margin-bottom:36px;">
+                                            <div style="font-size:28px; font-weight:900; color:#fff; letter-spacing:3px;">ГАРАНТИЙНЫЙ ТАЛОН</div>
+                                            <div style="color:#999; font-size:13px; margin-top:8px;">№ @order.Id от @order.CreatedAt.ToString("dd.MM.yyyy")</div>
+                                        </div>
+                                        <div style="background:#242424; border-radius:8px; padding:24px; margin-bottom:24px;">
+                                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                                                <div>
+                                                    <div style="color:#666; font-size:10px; letter-spacing:1px; margin-bottom:6px;">ПОКУПАТЕЛЬ</div>
+                                                    <div style="color:#e0e0e0; font-weight:600; font-size:15px;">@order.ContactName</div>
+                                                    <div style="color:#999; font-size:13px; margin-top:4px;">тел. @order.ContactPhone</div>
+                                                </div>
+                                                <div>
+                                                    <div style="color:#666; font-size:10px; letter-spacing:1px; margin-bottom:6px;">ДАТА ПОКУПКИ</div>
+                                                    <div style="color:#e0e0e0; font-weight:600; font-size:15px;">@order.CreatedAt.ToString("dd.MM.yyyy")</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div style="margin-bottom:24px;">
+                                            <div style="color:#666; font-size:10px; letter-spacing:1px; margin-bottom:12px;">ПРИОБРЕТЁННЫЕ ТОВАРЫ</div>
+                                            <table style="width:100%; border-collapse:collapse; font-size:13px;">
+                                                <thead>
+                                                    <tr style="background:#242424; border-bottom:2px solid #D44177;">
+                                                        <th style="padding:12px 14px; text-align:left; color:#D44177; font-size:10px; letter-spacing:1px;">НАИМЕНОВАНИЕ</th>
+                                                        <th style="padding:12px 14px; text-align:center; color:#D44177; font-size:10px; letter-spacing:1px; width:70px;">КОЛ-ВО</th>
+                                                        <th style="padding:12px 14px; text-align:right; color:#D44177; font-size:10px; letter-spacing:1px; width:120px;">ЦЕНА</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach (var item in order.Items)
+                                                    {
+                                                        <tr style="border-bottom:1px solid #2a2a2a;">
+                                                            <td style="padding:10px 14px; color:#e0e0e0; font-weight:600;">@item.Smartphone.ModelName</td>
+                                                            <td style="padding:10px 14px; text-align:center; color:#b0b0b0;">@item.Quantity</td>
+                                                            <td style="padding:10px 14px; text-align:right; color:#fff; font-weight:700;">@item.PriceAtPurchase.ToString("N0") BYN</td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:36px;">
+                                            <div>
+                                                <div style="color:#666; font-size:10px; letter-spacing:1px; margin-bottom:8px;">СРОК ГАРАНТИИ</div>
+                                                <div style="color:#D44177; font-weight:700; font-size:18px;">12 месяцев</div>
+                                                <div style="color:#999; font-size:12px; margin-top:4px;">с @order.CreatedAt.ToString("dd.MM.yyyy") по @order.CreatedAt.AddMonths(12).ToString("dd.MM.yyyy")</div>
+                                            </div>
+                                            <div>
+                                                <div style="color:#666; font-size:10px; letter-spacing:1px; margin-bottom:8px;">СУММА ПОКУПКИ</div>
+                                                <div style="color:#D44177; font-weight:700; font-size:18px;">@order.TotalAmount.ToString("N0") BYN</div>
+                                            </div>
+                                        </div>
+                                        <div style="display:flex; justify-content:space-between; margin-top:48px; padding-top:24px; border-top:1px solid #2a2a2a;">
+                                            <div>
+                                                <div style="color:#666; font-size:10px; letter-spacing:1px; margin-bottom:30px;">ПРОДАВЕЦ</div>
+                                                <div style="border-top:1px solid #555; padding-top:8px; color:#999; font-size:12px;">М.П.</div>
+                                            </div>
+                                            <div style="text-align:right;">
+                                                <div style="color:#666; font-size:10px; letter-spacing:1px; margin-bottom:30px;">ПОКУПАТЕЛЬ</div>
+                                                <div style="border-top:1px solid #555; padding-top:8px; color:#999; font-size:12px;">@order.ContactName</div>
+                                            </div>
+                                        </div>
+                                        <div style="background:#242424; border-radius:8px; padding:24px; margin-top:36px;">
+                                            <div style="color:#666; font-size:10px; letter-spacing:1px; margin-bottom:10px;">ГАРАНТИЙНЫЕ ОБЯЗАТЕЛЬСТВА</div>
+                                            <p style="color:#e0e0e0; font-size:14px; line-height:1.7; margin:0 0 12px 0;">
+                                                ООО «RXXMRKT» гарантирует работоспособность приобретённого товара в течение <strong style="color:#D44177;">12 (двенадцати) месяцев</strong> с даты покупки.
+                                            </p>
+                                            <p style="color:#b0b0b0; font-size:13px; line-height:1.6; margin:0 0 12px 0;">
+                                                Гарантия распространяется на дефекты, возникшие по вине производителя. Гарантийное обслуживание осуществляется в авторизованном сервисном центре.
+                                            </p>
+                                            <p style="color:#b0b0b0; font-size:13px; line-height:1.6; margin:0;">
+                                                Гарантия не распространяется на механические повреждения, следы воздействия жидкости, а также на повреждения, вызванные неправильной эксплуатацией.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    }
                                 </div>
                             }
                         </div>

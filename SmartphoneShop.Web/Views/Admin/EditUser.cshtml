@@ -1,0 +1,90 @@
+@model SmartphoneShop.Core.Entities.AppUser
+@{
+    ViewData["Title"] = "Редактировать пользователя";
+    var availableRoles = ViewBag.AvailableRoles as string[];
+    var currentRole = ViewBag.CurrentRole as string ?? "User";
+
+    var roleTranslations = new Dictionary<string, string>
+    {
+        { "Admin", "Администратор" },
+        { "ProductAdmin", "Админ товаров" },
+        { "RepairSpecialist", "Специалист ремонта" },
+        { "User", "Пользователь" },
+        { "Народный эксперт", "Народный эксперт" }
+    };
+
+    string GetRoleName(string role)
+    {
+        return roleTranslations.ContainsKey(role) ? roleTranslations[role] : role;
+    }
+}
+
+<section>
+    <div class="container">
+        <h2 class="section-title">Редактировать пользователя</h2>
+
+        <div style="max-width: 500px; margin: 0 auto;">
+            <div class="service-card">
+                <div style="margin-bottom: 20px;">
+                    <a href="/admin/users" style="color: #888; text-decoration: none; font-size: 14px;">← Назад к списку</a>
+                </div>
+
+                @if (TempData["Error"] != null)
+                {
+                    <div style="padding: 15px; margin-bottom: 20px; background: rgba(231,76,60,0.1); border: 1px solid #e74c3c; border-radius: 8px; color: #e74c3c;">
+                        @TempData["Error"]
+                    </div>
+                }
+
+                <form method="post" action="/admin/edituser">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+
+                    <div class="form-group">
+                        <label>ФИО</label>
+                        <input type="text" name="fullName" value="@Model.FullName" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" name="email" value="@Model.Email" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Телефон</label>
+                        <input type="tel" name="phone" value="@(Model.Phone ?? "")" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Роль</label>
+                        <select name="role" required>
+                            @if (availableRoles != null)
+                            {
+                                @foreach (var role in availableRoles)
+                                {
+                                    if (role == currentRole)
+                                    {
+                                        <option value="@role" selected>@GetRoleName(role)</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@role">@GetRoleName(role)</option>
+                                    }
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Новый пароль</label>
+                        <input type="password" name="newPassword" minlength="6" placeholder="Оставьте пустым чтобы не менять" />
+                    </div>
+
+                    <button type="submit" class="cta-button" style="width: 100%; margin-top: 20px;">Сохранить</button>
+                </form>
+
+                <a href="/admin/users" class="cta-button" style="width: 100%; margin-top: 10px; background: #3a3a3a; display: block; box-sizing: border-box;">Отмена</a>
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,111 @@
+@model X.PagedList.IPagedList<SmartphoneShop.Core.Entities.SparePart>
+@{
+    ViewData["Title"] = "Запчасти";
+}
+
+<section>
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h2 class="section-title" style="margin: 0;">Запчасти</h2>
+            @if (User.IsInRole("Admin") || User.IsInRole("ProductAdmin"))
+            {
+                <a href="/adminspareparts/create" class="cta-button">+ Добавить запчасть</a>
+            }
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <form method="get" action="/adminspareparts" style="display: flex; gap: 10px;">
+                <input type="text" name="search" value="@ViewBag.Search" placeholder="Поиск по названию..." class="form-control" style="flex: 1; max-width: 400px; padding: 10px 16px; background: #1a1a1a; border: 1px solid #3a3a3a; border-radius: 8px; color: #f0f0f0;" />
+                <button type="submit" class="cta-button" style="padding: 10px 20px;">Найти</button>
+                @if (!string.IsNullOrEmpty((string)ViewBag.Search))
+                {
+                    <a href="/adminspareparts" class="cta-button" style="padding: 10px 20px; background: #3a3a3a;">Сбросить</a>
+                }
+            </form>
+        </div>
+
+        @if (Model.Any())
+        {
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; background: #1a1a1a; border-radius: 12px; overflow: hidden;">
+                    <thead>
+                        <tr style="background: #242424; border-bottom: 2px solid #D44177;">
+                            <th style="padding: 14px 16px; text-align: left; color: #D44177; font-size: 11px; letter-spacing: 1px; text-transform: uppercase;">#</th>
+                            <th style="padding: 14px 16px; text-align: left; color: #D44177; font-size: 11px; letter-spacing: 1px; text-transform: uppercase;">Название</th>
+                            <th style="padding: 14px 16px; text-align: right; color: #D44177; font-size: 11px; letter-spacing: 1px; text-transform: uppercase;">Цена</th>
+                            <th style="padding: 14px 16px; text-align: center; color: #D44177; font-size: 11px; letter-spacing: 1px; text-transform: uppercase;">Кол-во</th>
+                            <th style="padding: 14px 16px; text-align: left; color: #D44177; font-size: 11px; letter-spacing: 1px; text-transform: uppercase;">Дата добавления</th>
+                            <th style="padding: 14px 16px; text-align: right; color: #D44177; font-size: 11px; letter-spacing: 1px; text-transform: uppercase;">Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var part in Model)
+                        {
+                            <tr style="border-bottom: 1px solid #2a2a2a;">
+                                <td style="padding: 12px 16px; color: #888;">@part.Id</td>
+                                <td style="padding: 12px 16px; color: #f0f0f0; font-weight: 600;">@part.Name</td>
+                                <td style="padding: 12px 16px; text-align: right; color: #D44177; font-weight: 700;">@part.Price.ToString("N0") BYN</td>
+                                <td style="padding: 12px 16px; text-align: center;">
+                                    @if (part.Quantity > 0)
+                                    {
+                                        <span style="color: #2ecc71;">@part.Quantity</span>
+                                    }
+                                    else
+                                    {
+                                        <span style="color: #e74c3c;">0</span>
+                                    }
+                                </td>
+                                <td style="padding: 12px 16px; color: #888; font-size: 13px;">@part.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                                <td style="padding: 12px 16px; text-align: right;">
+                                    @if (User.IsInRole("Admin") || User.IsInRole("ProductAdmin"))
+                                    {
+                                        <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                                            <a href="/adminspareparts/edit/@part.Id" style="padding: 6px 14px; background: #3a3a3a; color: #f0f0f0; border-radius: 6px; text-decoration: none; font-size: 13px;">Изменить</a>
+                                            <form method="post" action="/adminspareparts/delete/@part.Id" onsubmit="return confirm('Удалить запчасть?')" style="margin: 0;">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" style="padding: 6px 14px; background: rgba(231,76,60,0.15); color: #e74c3c; border: 1px solid rgba(231,76,60,0.3); border-radius: 6px; cursor: pointer; font-size: 13px;">Удалить</button>
+                                            </form>
+                                        </div>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (Model.PageCount > 1)
+            {
+                <div style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 20px; padding: 16px 0;">
+                    @if (Model.HasPreviousPage)
+                    {
+                        <a href="@Url.Action("Index", new { page = Model.PageNumber - 1, search = ViewBag.Search })" style="padding: 8px 16px; background: #2c2c2c; color: #f0f0f0; border-radius: 6px; text-decoration: none; font-size: 14px;">← Назад</a>
+                    }
+                    @for (int i = 1; i <= Model.PageCount; i++)
+                    {
+                        if (i == Model.PageNumber)
+                        {
+                            <span style="padding: 8px 12px; background: #D44177; color: #fff; border-radius: 6px; font-size: 14px; font-weight: 600;">@i</span>
+                        }
+                        else
+                        {
+                            <a href="@Url.Action("Index", new { page = i, search = ViewBag.Search })" style="padding: 8px 12px; background: #2c2c2c; color: #f0f0f0; border-radius: 6px; text-decoration: none; font-size: 14px;">@i</a>
+                        }
+                    }
+                    @if (Model.HasNextPage)
+                    {
+                        <a href="@Url.Action("Index", new { page = Model.PageNumber + 1, search = ViewBag.Search })" style="padding: 8px 16px; background: #2c2c2c; color: #f0f0f0; border-radius: 6px; text-decoration: none; font-size: 14px;">Вперёд →</a>
+                    }
+                    <span style="color: #888; font-size: 13px; margin-left: 10px;">@Model.PageNumber из @Model.PageCount | Всего: @Model.TotalItemCount</span>
+                </div>
+            }
+        }
+        else
+        {
+            <div style="text-align: center; padding: 60px; background: #1a1a1a; border-radius: 12px; border: 1px solid #2c2c2c;">
+                <h3 style="color: #888;">Запчасти не найдены</h3>
+                <p style="color: #666; margin-top: 10px;">Добавьте первую запчасть</p>
+            </div>
+        }
+    </div>
+</section>

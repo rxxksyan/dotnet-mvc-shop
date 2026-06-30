@@ -3,6 +3,7 @@
     ViewData["Title"] = "Оформление заказа";
     var isBuyNow = ViewBag.IsBuyNow == true;
     var buyNowItem = ViewBag.BuyNowItem as SmartphoneShop.Web.Controllers.CartItemModel;
+    var hasStockIssue = !isBuyNow && Model != null && Model.Items.Any(i => i.Quantity > i.Smartphone.Quantity || i.Smartphone.Quantity <= 0);
 }
 
 <section>
@@ -60,6 +61,14 @@
                                     <div>
                                         <h4>@item.Smartphone.ModelName</h4>
                                         <p>@item.Quantity шт. × @item.Smartphone.Price.ToString("N0") BYN</p>
+                                        @if (item.Smartphone.Quantity <= 0)
+                                        {
+                                            <p style="color: #e74c3c; font-size: 12px; margin-top: 4px;">Товар закончился на складе</p>
+                                        }
+                                        else if (item.Quantity > item.Smartphone.Quantity)
+                                        {
+                                            <p style="color: #e74c3c; font-size: 12px; margin-top: 4px;">На складе только @item.Smartphone.Quantity шт.</p>
+                                        }
                                     </div>
                                 </div>
                                 <p class="checkout-item-price">@((item.Smartphone.Price * item.Quantity).ToString("N0")) BYN</p>
@@ -74,6 +83,14 @@
             
             <div class="contact-form">
                 <h3>Способ получения</h3>
+
+                @if (TempData["Error"] != null)
+                {
+                    <div style="padding: 12px 16px; background: rgba(231,76,60,0.1); border: 1px solid #e74c3c; border-radius: 8px; color: #e74c3c; font-size: 13px; margin-bottom: 16px;">
+                        @TempData["Error"]
+                    </div>
+                }
+
                 <form method="post" action="/order/create">
                     @Html.AntiForgeryToken()
 
@@ -128,7 +145,14 @@
                         <textarea name="notes" placeholder="Ваши пожелания" rows="2"></textarea>
                     </div>
                     
-                    <button type="submit" class="cta-button" style="width: 100%; margin-top: 20px;">Подтвердить заказ</button>
+                    @if (hasStockIssue)
+                    {
+                        <div style="padding: 12px 16px; background: rgba(231, 76, 60, 0.1); border: 1px solid #e74c3c; border-radius: 8px; color: #e74c3c; font-size: 13px; margin-bottom: 16px;">
+                            Некоторые товары отсутствуют на складе в нужном количестве. Вернитесь в корзину и уменьшите количество.
+                        </div>
+                    }
+                    
+                    <button type="submit" class="cta-button" style="width: 100%; margin-top: 20px; @(hasStockIssue ? "opacity: 0.5; cursor: not-allowed;" : "")" @(hasStockIssue ? "disabled" : "")>Подтвердить заказ</button>
                 </form>
             </div>
 

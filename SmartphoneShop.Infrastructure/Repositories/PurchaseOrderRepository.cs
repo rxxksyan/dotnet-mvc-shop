@@ -64,4 +64,12 @@ public class PurchaseOrderRepository : IPurchaseOrderRepository
                          && po.SmartphoneId == smartphoneId
                          && (po.Status == "Pending" || po.Status == "Processing"));
     }
+
+    public async Task<bool> UserHasDeliveredOrderAsync(string userId, int smartphoneId)
+    {
+        return await _context.PurchaseOrders
+            .AnyAsync(po => po.UserId == userId
+                         && po.SmartphoneId == smartphoneId
+                         && po.Status == "Completed");
+    }
 }

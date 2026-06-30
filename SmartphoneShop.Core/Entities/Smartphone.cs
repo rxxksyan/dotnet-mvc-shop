@@ -30,7 +30,7 @@ public class Smartphone
     public string? ImageUrls { get; set; }
 
     public string? Description { get; set; }
-    public bool IsInStock { get; set; } = true;
+    public int Quantity { get; set; } = 0;
     public bool IsFeatured { get; set; }
     public int PopularityScore { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

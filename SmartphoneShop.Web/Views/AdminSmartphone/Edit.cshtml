@@ -188,11 +188,10 @@
                     <textarea name="Description" class="form-control" rows="4">@Model.Description</textarea>
                 </div>
 
-                <div style="display: flex; gap: 20px; margin-top: 20px;">
-                    <div class="checkbox-group">
-                        <input type="checkbox" name="IsInStock" id="IsInStock" value="true" @(Model.IsInStock ? "checked" : "") />
-                        <input type="hidden" name="IsInStock" value="false" />
-                        <label for="IsInStock">В наличии</label>
+                <div style="display: flex; gap: 20px; margin-top: 20px; align-items: flex-end;">
+                    <div class="form-group" style="margin-bottom: 0; flex: 0 0 200px;">
+                        <label class="form-label">Количество на складе</label>
+                        <input type="number" name="Quantity" class="form-control" value="@Model.Quantity" min="0" />
                     </div>
                     <div class="checkbox-group">
                         <input type="checkbox" name="IsFeatured" id="IsFeatured" value="true" @(Model.IsFeatured ? "checked" : "") />

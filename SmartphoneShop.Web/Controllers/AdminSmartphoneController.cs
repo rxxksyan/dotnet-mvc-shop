@@ -81,7 +81,7 @@ public class AdminSmartphoneController : Controller
             ImageUrl = model.ImageUrl,
             ImageUrls = model.ImageUrls,
             Description = model.Description,
-            IsInStock = model.IsInStock,
+            Quantity = model.Quantity,
             IsFeatured = model.IsFeatured,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
@@ -148,7 +148,7 @@ public class AdminSmartphoneController : Controller
             ImageUrl = smartphone.ImageUrl,
             ImageUrls = smartphone.ImageUrls,
             Description = smartphone.Description,
-            IsInStock = smartphone.IsInStock,
+            Quantity = smartphone.Quantity,
             IsFeatured = smartphone.IsFeatured,
             CreatedAt = smartphone.CreatedAt
         };
@@ -193,7 +193,7 @@ public class AdminSmartphoneController : Controller
         smartphone.ImageUrl = model.ImageUrl;
         smartphone.ImageUrls = model.ImageUrls;
         smartphone.Description = model.Description;
-        smartphone.IsInStock = model.IsInStock;
+        smartphone.Quantity = model.Quantity;
         smartphone.IsFeatured = model.IsFeatured;
         smartphone.UpdatedAt = DateTime.UtcNow;
 

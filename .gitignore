@@ -56,3 +56,7 @@ SmartphoneShop.Web/wwwroot/lib/
 # User-uploaded content
 wwwroot/uploads/*
 SmartphoneShop.Web/wwwroot/uploads/*
+
+# Diagrams and coursework (not for code repo)
+SmartphoneShop.Diagrams/
+SmartphoneShop.PZ/

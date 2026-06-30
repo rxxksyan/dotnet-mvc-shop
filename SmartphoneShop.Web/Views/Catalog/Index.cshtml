@@ -140,9 +140,9 @@
         <div class="product-grid">
             @foreach (var phone in Model)
             {
-                <a href="/product/details/@phone.Id" class="product-card @(!phone.IsInStock ? "out-of-stock" : "")">
+                <a href="/product/details/@phone.Id" class="product-card @(phone.Quantity <= 0 ? "out-of-stock" : "")">
                     <div class="product-image">
-                        @if (!phone.IsInStock)
+                        @if (phone.Quantity <= 0)
                         {
                             <div class="out-of-stock-overlay"></div>
                             <span class="out-of-stock-badge">Нет в наличии</span>
@@ -176,7 +176,7 @@
                     <p class="specs">@phone.ScreenSize" • @(phone.RAM ?? 0) ГБ • @(phone.Storage ?? 0) ГБ</p>
                     <p class="price">@phone.Price.ToString("N0") BYN</p>
                     <div class="product-actions" onclick="event.preventDefault(); event.stopPropagation();">
-                        <button type="button" class="cta-button" style="flex: 1;" onclick="addToCart(@phone.Id)" @(!phone.IsInStock ? "disabled" : "")>
+                        <button type="button" class="cta-button" style="flex: 1;" onclick="addToCart(@phone.Id)" @(phone.Quantity <= 0 ? "disabled" : "")>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
                                 <line x1="3" y1="6" x2="21" y2="6"></line>

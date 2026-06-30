@@ -11,4 +11,5 @@ public interface IOrderRepository
     Task<IEnumerable<Order>> GetAllAsync();
     Task AddAsync(Order order);
     Task UpdateAsync(Order order);
+    Task<bool> UserHasPurchasedSmartphoneAsync(string userId, int smartphoneId);
 }

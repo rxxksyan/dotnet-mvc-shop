@@ -20,6 +20,8 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<Review> Reviews => Set<Review>();
     public DbSet<PurchaseOrder> PurchaseOrders => Set<PurchaseOrder>();
     public DbSet<ExpertOpinion> ExpertOpinions => Set<ExpertOpinion>();
+    public DbSet<SparePart> SpareParts => Set<SparePart>();
+    public DbSet<RepairSparePart> RepairSpareParts => Set<RepairSparePart>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -132,6 +134,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.EstimatedPrice).HasColumnType("decimal(10,2)");
+            entity.Property(e => e.ServicePrice).HasColumnType("decimal(10,2)");
             entity.HasOne(e => e.User)
                 .WithMany(u => u.RepairRequests)
                 .HasForeignKey(e => e.UserId)
@@ -140,9 +143,28 @@ public class AppDbContext : IdentityDbContext<AppUser>
                 .WithMany()
                 .HasForeignKey(e => e.MasterUserId)
                 .OnDelete(DeleteBehavior.SetNull);
+            entity.HasMany(e => e.RepairSpareParts)
+                .WithOne(r => r.RepairRequest)
+                .HasForeignKey(r => r.RepairRequestId)
+                .OnDelete(DeleteBehavior.Cascade);
             entity.HasIndex(e => e.UserId);
             entity.HasIndex(e => e.MasterUserId);
             entity.HasIndex(e => e.Status);
+        });
+
+        builder.Entity<RepairSparePart>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.SparePartPrice).HasColumnType("decimal(10,2)");
+            entity.HasOne(e => e.RepairRequest)
+                .WithMany(r => r.RepairSpareParts)
+                .HasForeignKey(e => e.RepairRequestId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.SparePart)
+                .WithMany()
+                .HasForeignKey(e => e.SparePartId)
+                .OnDelete(DeleteBehavior.SetNull);
+            entity.HasIndex(e => e.RepairRequestId);
         });
 
         builder.Entity<Review>(entity =>

@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -27,6 +28,7 @@ public class AdminRepairsController : Controller
         var query = _context.RepairRequests
             .Include(r => r.User)
             .Include(r => r.MasterUser)
+            .Include(r => r.RepairSpareParts)
             .AsQueryable();
 
         if (!string.IsNullOrEmpty(status))
@@ -60,19 +62,43 @@ public class AdminRepairsController : Controller
         var repair = await _context.RepairRequests
             .Include(r => r.User)
             .Include(r => r.MasterUser)
+            .Include(r => r.RepairSpareParts)
+                .ThenInclude(rsp => rsp.SparePart)
             .FirstOrDefaultAsync(r => r.Id == id);
-        
+
         if (repair == null)
             return NotFound();
 
         return View(repair);
     }
 
+    [HttpGet]
+    public async Task<IActionResult> SearchSpareParts(string query)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+            return Json(Array.Empty<object>());
+
+        var lowerQuery = query.ToLower();
+        var parts = await _context.SpareParts
+            .Where(s => s.Name.ToLower().Contains(lowerQuery) && s.Quantity > 0)
+            .OrderBy(s => s.Name)
+            .Take(10)
+            .Select(s => new { id = s.Id, name = s.Name, price = s.Price, quantity = s.Quantity })
+            .ToListAsync();
+
+        return Json(parts);
+    }
+
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> UpdateStatus(int id, RepairStatus status, decimal? estimatedPrice, string? adminNotes)
+    public async Task<IActionResult> UpdateStatus(
+        int id, RepairStatus status, decimal? estimatedPrice,
+        string? adminNotes, string? selectedPartsJson,
+        decimal? servicePrice, string? notesForClient, bool isClientFault = false)
     {
-        var repair = await _context.RepairRequests.FindAsync(id);
+        var repair = await _context.RepairRequests
+            .Include(r => r.RepairSpareParts)
+            .FirstOrDefaultAsync(r => r.Id == id);
         if (repair == null)
             return NotFound();
 
@@ -110,7 +136,7 @@ public class AdminRepairsController : Controller
         }
 
         var allowedStatuses = GetAllowedNextStatuses(currentStatus, repair.ClientApproved);
-        
+
         if (!allowedStatuses.Contains(status))
         {
             TempData["Error"] = $"Нельзя изменить статус с '{GetStatusDisplayName(currentStatus)}' на '{GetStatusDisplayName(status)}'. Доступны: {string.Join(", ", allowedStatuses.Select(GetStatusDisplayName))}";
@@ -129,10 +155,10 @@ public class AdminRepairsController : Controller
             RepairStatus.ReadyForPickup,
             RepairStatus.Completed
         };
-        
+
         var currentIndex = statusOrder.IndexOf(currentStatus);
         var newIndex = statusOrder.IndexOf(status);
-        
+
         if (status != RepairStatus.Cancelled && newIndex < currentIndex)
         {
             TempData["Error"] = "Нельзя откатывать статус назад.";
@@ -145,7 +171,6 @@ public class AdminRepairsController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        // Auto-assign master if not yet assigned
         if (string.IsNullOrEmpty(repair.MasterUserId))
         {
             var currentUserId = _userManager.GetUserId(User);
@@ -156,21 +181,89 @@ public class AdminRepairsController : Controller
         }
 
         repair.Status = status;
-        
-        if (estimatedPrice.HasValue)
+
+        if (status == RepairStatus.RepairApproval)
+        {
+            repair.IsClientFault = isClientFault;
+
+            if (repair.IsWarranty && !isClientFault)
+            {
+                repair.EstimatedPrice = 0;
+                repair.ServicePrice = 0;
+            }
+            else
+            {
+                if (!estimatedPrice.HasValue || estimatedPrice.Value <= 0)
+                {
+                    TempData["Error"] = "Укажите стоимость диагностики.";
+                    return RedirectToAction(nameof(Index));
+                }
+                repair.EstimatedPrice = estimatedPrice.Value;
+            }
+        }
+        else if (estimatedPrice.HasValue)
         {
             repair.EstimatedPrice = estimatedPrice.Value;
         }
-        
+
+        if (servicePrice.HasValue)
+        {
+            repair.ServicePrice = servicePrice.Value;
+        }
+
         if (!string.IsNullOrEmpty(adminNotes))
         {
             repair.AdminNotes = adminNotes;
         }
-        
+
+        if (!string.IsNullOrEmpty(notesForClient))
+        {
+            repair.NotesForClient = notesForClient;
+        }
+
+        if (status == RepairStatus.RepairApproval && !string.IsNullOrEmpty(selectedPartsJson))
+        {
+            var existingParts = _context.RepairSpareParts
+                .Where(rsp => rsp.RepairRequestId == id);
+            _context.RepairSpareParts.RemoveRange(existingParts);
+
+            var selectedParts = JsonSerializer.Deserialize<List<SelectedPartDto>>(selectedPartsJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            if (selectedParts != null)
+            {
+                foreach (var part in selectedParts)
+                {
+                    var repairSparePart = new RepairSparePart
+                    {
+                        RepairRequestId = id,
+                        SparePartId = part.SparePartId,
+                        SparePartName = part.Name,
+                        SparePartPrice = part.Price,
+                        IsAvailable = part.IsAvailable,
+                        EstimatedWaitDays = part.IsAvailable ? null : part.EstimatedWaitDays
+                    };
+                    _context.RepairSpareParts.Add(repairSparePart);
+                }
+            }
+        }
+
         repair.UpdatedAt = DateTime.UtcNow;
 
+        if (status == RepairStatus.Completed)
+        {
+            var partsToDecrement = await _context.RepairSpareParts
+                .Where(rsp => rsp.RepairRequestId == id && rsp.SparePartId.HasValue && rsp.IsAvailable)
+                .ToListAsync();
+            foreach (var rsp in partsToDecrement)
+            {
+                var sparePart = await _context.SpareParts.FindAsync(rsp.SparePartId.Value);
+                if (sparePart != null)
+                {
+                    sparePart.Quantity = Math.Max(0, sparePart.Quantity - 1);
+                }
+            }
+        }
+
         await _context.SaveChangesAsync();
-        TempData["Message"] = $"Статус заявки #{id} изменён на '{GetStatusDisplayName(status)}'";
 
         return RedirectToAction(nameof(Index));
     }
@@ -212,8 +305,8 @@ public class AdminRepairsController : Controller
             RepairStatus.RepairApproval => clientApproved switch
             {
                 true => new List<RepairStatus> { RepairStatus.InRepair, RepairStatus.Cancelled },
-                false => new List<RepairStatus>(), // Уже должно быть Cancelled
-                _ => new List<RepairStatus> { RepairStatus.Cancelled } // Ждём клиента, можно только отменить
+                false => new List<RepairStatus>(),
+                _ => new List<RepairStatus> { RepairStatus.Cancelled }
             },
             RepairStatus.InRepair => new List<RepairStatus>
             {
@@ -245,5 +338,14 @@ public class AdminRepairsController : Controller
             RepairStatus.Cancelled => "Отменён",
             _ => status.ToString()
         };
+    }
+
+    public class SelectedPartDto
+    {
+        public int? SparePartId { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public decimal Price { get; set; }
+        public bool IsAvailable { get; set; } = true;
+        public int? EstimatedWaitDays { get; set; }
     }
 }

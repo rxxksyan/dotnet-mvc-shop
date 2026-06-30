@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SmartphoneShop.Core.Entities;
 using SmartphoneShop.Core.Enums;
 using SmartphoneShop.Core.Interfaces;
@@ -23,20 +24,35 @@ public class RepairController : Controller
         if (User.Identity?.IsAuthenticated == true)
         {
             var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            var requests = await _repairRepo.GetByUserIdAsync(userId);
+            var requests = await _context.RepairRequests
+                .Include(r => r.RepairSpareParts)
+                .Include(r => r.MasterUser)
+                .Include(r => r.User)
+                .Where(r => r.UserId == userId)
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
             ViewBag.Repairs = requests;
+
+            var warrantyDate = DateTime.UtcNow.AddMonths(-12);
+            var warrantyRepairs = await _context.RepairRequests
+                .Where(r => r.UserId == userId &&
+                            r.Status == RepairStatus.Completed &&
+                            r.UpdatedAt >= warrantyDate)
+                .OrderByDescending(r => r.UpdatedAt)
+                .ToListAsync();
+            ViewBag.WarrantyRepairs = warrantyRepairs;
         }
         return View();
     }
 
     [HttpPost]
     [Microsoft.AspNetCore.Authorization.Authorize]
-    public async Task<IActionResult> Create(string smartphoneModel, string issueDescription)
+    public async Task<IActionResult> Create(string smartphoneModel, string serialNumber, string issueDescription, bool isWarranty = false)
     {
         var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         if (userId == null) return RedirectToAction("Login", "Account");
 
-        if (string.IsNullOrEmpty(smartphoneModel) || string.IsNullOrEmpty(issueDescription))
+        if (string.IsNullOrEmpty(smartphoneModel) || string.IsNullOrEmpty(issueDescription) || string.IsNullOrEmpty(serialNumber))
         {
             TempData["Error"] = "Заполните все поля";
             return RedirectToAction("Index");
@@ -46,8 +62,10 @@ public class RepairController : Controller
         {
             UserId = userId,
             SmartphoneModel = smartphoneModel,
+            SerialNumber = serialNumber,
             IssueDescription = issueDescription,
-            Status = RepairStatus.New
+            Status = RepairStatus.New,
+            IsWarranty = isWarranty
         };
 
         await _repairRepo.AddAsync(request);

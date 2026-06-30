@@ -138,14 +138,46 @@
                 
 
                 <form method="post" action="/repair/create">
+                    <input type="hidden" name="isWarranty" id="isWarrantyHidden" value="false" />
+                    @if (ViewBag.WarrantyRepairs != null)
+                    {
+                        var warrantyRepairs = ViewBag.WarrantyRepairs as IEnumerable<SmartphoneShop.Core.Entities.RepairRequest>;
+                        if (warrantyRepairs != null && warrantyRepairs.Any())
+                        {
+                            <div class="form-group" style="margin-bottom: 20px; padding: 16px; background: rgba(212,65,119,0.06); border: 1px solid rgba(212,65,119,0.2); border-radius: 8px;">
+                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                    <input type="checkbox" id="isWarrantyCheck" onchange="toggleWarrantyField()" style="accent-color: #D44177; width: 18px; height: 18px;" />
+                                    <span style="color: #f0f0f0; font-size: 14px;">Ремонт по гарантии</span>
+                                </label>
+                                <p style="margin: 6px 0 0 28px; font-size: 12px; color: #888;">Если ваше устройство было отремонтировано у нас в течение последних 12 месяцев</p>
+                            </div>
+                            <div id="warrantySelectField" class="form-group" style="margin-bottom: 20px; display: none;">
+                                <label class="form-label">Выберите гарантийный ремонт</label>
+                                <select id="warrantyRepairSelect" class="form-control" onchange="fillWarrantyData()">
+                                    <option value="">— Выберите из списка —</option>
+                                    @foreach (var wr in warrantyRepairs)
+                                    {
+                                        var snText = !string.IsNullOrEmpty(wr.SerialNumber) ? wr.SerialNumber : "без номера";
+                                        <option value="@wr.Id" data-model="@Html.Raw(System.Net.WebUtility.HtmlEncode(wr.SmartphoneModel))" data-sn="@Html.Raw(System.Net.WebUtility.HtmlEncode(wr.SerialNumber ?? ""))" data-issue="@Html.Raw(System.Net.WebUtility.HtmlEncode(wr.IssueDescription))">@wr.SmartphoneModel — SN: @snText (@wr.UpdatedAt.ToString("dd.MM.yyyy"))</option>
+                                    }
+                                </select>
+                            </div>
+                        }
+                    }
+
                     <div class="form-group" style="margin-bottom: 20px;">
                         <label class="form-label">Модель смартфона</label>
-                        <input type="text" name="smartphoneModel" class="form-control" required placeholder="Samsung Galaxy S24, iPhone 15 и т.д." />
+                        <input type="text" name="smartphoneModel" id="warrantyModelField" class="form-control" required placeholder="Samsung Galaxy S24, iPhone 15 и т.д." />
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label class="form-label">Серийный номер</label>
+                        <input type="text" name="serialNumber" id="warrantySnField" class="form-control" required placeholder="IMEI или серийный номер устройства" />
                     </div>
                     
                     <div class="form-group" style="margin-bottom: 20px;">
                         <label class="form-label">Описание проблемы</label>
-                        <textarea name="issueDescription" class="form-control" required placeholder="Опишите проблему подробно..." rows="5"></textarea>
+                        <textarea name="issueDescription" id="warrantyIssueField" class="form-control" required placeholder="Опишите проблему подробно..." rows="5"></textarea>
                     </div>
                     
                     <button type="submit" class="cta-button" style="width: 100%;">Отправить заявку</button>
@@ -201,11 +233,8 @@
                                                 <span class="badge @statusClass" style="padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 500;">@statusText</span>
                                             </div>
                                             <p style="margin: 0 0 8px 0; color: #b0b0b0; font-size: 14px;">Создана: @request.CreatedAt.ToString("dd.MM.yyyy HH:mm")</p>
+                                            <p style="margin: 0 0 4px 0; color: #888; font-size: 13px;">SN: @request.SerialNumber</p>
                                             <p style="margin: 0; color: #b0b0b0; font-size: 14px;">@request.IssueDescription</p>
-                                            @if (request.EstimatedPrice.HasValue)
-                                            {
-                                                <p style="margin: 12px 0 0 0; font-size: 16px; font-weight: 600; color: #D44177;">Оценка: @request.EstimatedPrice.Value.ToString("N0") BYN</p>
-                                            }
                                         </div>
                                     </div>
                                     
@@ -215,46 +244,151 @@
                                             <p style="margin: 0; font-size: 13px; color: #f0f0f0;"><strong>Мастер:</strong> @request.AdminNotes</p>
                                         </div>
                                     }
-                                    
+
+                                    @if (!string.IsNullOrEmpty(request.NotesForClient))
+                                    {
+                                        <div style="margin-top: 8px; padding: 12px 16px; background: rgba(255, 255, 255, 0.03); border-left: 3px solid #888; border-radius: 6px;">
+                                            <p style="margin: 0; font-size: 13px; color: #b0b0b0;"><strong>Доп. информация:</strong> @request.NotesForClient</p>
+                                        </div>
+                                    }
+
+                                    @if (request.IsWarranty && !request.IsClientFault && (!request.EstimatedPrice.HasValue || request.EstimatedPrice.Value == 0))
+                                    {
+                                        <p style="margin: 12px 0 0 0; font-size: 14px; color: #4CAF50;">Ремонт по гарантии — <strong>0 BYN</strong></p>
+                                    }
+                                    else if (request.EstimatedPrice.HasValue && !request.RepairSpareParts.Any())
+                                    {
+                                        <p style="margin: 12px 0 0 0; font-size: 14px; color: #b0b0b0;">Диагностика: <strong style="color: #D44177;">@request.EstimatedPrice.Value.ToString("N0") BYN</strong></p>
+                                    }
+
+                                    @if (request.RepairSpareParts.Any())
+                                    {
+                                        var isWarrantyFree = request.IsWarranty && !request.IsClientFault;
+                                        <div style="margin-top: 12px; padding: 16px; background: #1a1a1a; border: 1px solid #2c2c2c; border-radius: 8px;">
+                                            <p style="margin: 0 0 10px 0; font-size: 14px; font-weight: 600; color: #f0f0f0;">Необходимые запчасти:</p>
+                                            @foreach (var part in request.RepairSpareParts)
+                                            {
+                                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #2c2c2c;">
+                                                    <div>
+                                                        <span style="color: #f0f0f0; font-size: 14px;">@part.SparePartName</span>
+                                                        @if (!part.IsAvailable)
+                                                        {
+                                                            <span style="margin-left: 8px; font-size: 12px; color: #D44177; background: rgba(212,65,119,0.15); padding: 2px 8px; border-radius: 4px;">Ожидание ~@(part.EstimatedWaitDays?.ToString() ?? "?") дн.</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span style="margin-left: 8px; font-size: 12px; color: #4CAF50;">В наличии</span>
+                                                        }
+                                                    </div>
+                                                    @if (isWarrantyFree)
+                                                    {
+                                                        <span style="color: #4CAF50; font-weight: 500;">0 BYN</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span style="color: #D44177; font-weight: 500;">@part.SparePartPrice.ToString("N0") BYN</span>
+                                                    }
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+
+                                    @{
+                                        var isWarrantyFree2 = request.IsWarranty && !request.IsClientFault;
+                                        var partsTotal = request.RepairSpareParts.Sum(p => p.SparePartPrice);
+                                        var servicePrice = request.ServicePrice ?? 0;
+                                        var repairTotal = isWarrantyFree2 ? 0 : (partsTotal + servicePrice);
+                                    }
+                                    @if (isWarrantyFree2 || partsTotal > 0 || (request.ServicePrice.HasValue && request.ServicePrice.Value > 0))
+                                    {
+                                        <div style="margin-top: 12px; padding: 16px; background: #1a1a1a; border: 1px solid #2c2c2c; border-radius: 8px;">
+                                            @if (isWarrantyFree2)
+                                            {
+                                                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                                    <span style="color: #b0b0b0; font-size: 13px;">Запчасти:</span>
+                                                    <span style="color: #4CAF50; font-size: 13px;">0 BYN</span>
+                                                </div>
+                                                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                                    <span style="color: #b0b0b0; font-size: 13px;">Услуга мастера:</span>
+                                                    <span style="color: #4CAF50; font-size: 13px;">0 BYN</span>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                if (partsTotal > 0)
+                                                {
+                                                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                                        <span style="color: #b0b0b0; font-size: 13px;">Запчасти:</span>
+                                                        <span style="color: #b0b0b0; font-size: 13px;">@partsTotal.ToString("N0") BYN</span>
+                                                    </div>
+                                                }
+                                                if (request.ServicePrice.HasValue && request.ServicePrice.Value > 0)
+                                                {
+                                                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                                        <span style="color: #b0b0b0; font-size: 13px;">Услуга мастера:</span>
+                                                        <span style="color: #b0b0b0; font-size: 13px;">@request.ServicePrice.Value.ToString("N0") BYN</span>
+                                                    </div>
+                                                }
+                                            }
+                                            <div style="display: flex; justify-content: space-between; font-weight: 600; font-size: 16px; border-top: 1px solid #3a3a3a; padding-top: 6px; margin-top: 4px;">
+                                                <span style="color: #f0f0f0;">Итого:</span>
+                                                <span style="color: @(isWarrantyFree2 ? "#4CAF50" : "#D44177");">@repairTotal.ToString("N0") BYN</span>
+                                            </div>
+                                            @if (!isWarrantyFree2 && request.EstimatedPrice.HasValue && request.EstimatedPrice.Value > 0)
+                                            {
+                                                <p style="margin: 8px 0 0 0; font-size: 12px; color: #888;">Диагностика: @request.EstimatedPrice.Value.ToString("N0") BYN (оплачивается при отказе от ремонта)</p>
+                                            }
+                                        </div>
+                                    }
+
                                     @if (request.Status == SmartphoneShop.Core.Enums.RepairStatus.RepairApproval)
                                     {
                                         <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #2c2c2c;">
                                             <p style="color: #D44177; margin: 0 0 10px 0; font-size: 14px;"><strong>Мастер ожидает вашего одобрения</strong></p>
-                                            <div style="display: flex; gap: 10px;">
-                                                <form method="post" action="/repair/respond" style="display: inline;">
-                                                    <input type="hidden" name="id" value="@request.Id" />
-                                                    <input type="hidden" name="approve" value="true" />
-                                                    <button type="submit" class="cta-button" style="padding: 8px 20px; font-size: 13px;">Одобрить ремонт</button>
-                                                </form>
-                                                <form method="post" action="/repair/respond" style="display: inline;">
-                                                    <input type="hidden" name="id" value="@request.Id" />
-                                                    <input type="hidden" name="approve" value="false" />
-                                                    <button type="submit" class="cta-button" style="padding: 8px 20px; font-size: 13px; background: #3a3a3a; color: #888;">Отклонить</button>
-                                                </form>
+
+                                            @if (request.ClientApproved == false)
+                                            {
+                                                <div style="padding: 12px 16px; background: rgba(100,100,100,0.15); border-left: 3px solid #888; border-radius: 6px; margin-bottom: 12px;">
+                                                    <p style="margin: 0; font-size: 13px; color: #b0b0b0;">Вы отказались от ремонта. К оплате: <strong style="color: #D44177;">@(request.EstimatedPrice?.ToString("N0") ?? "0") BYN</strong> (диагностика)</p>
+                                                    <p style="margin: 6px 0 0 0; font-size: 13px; color: #f0f0f0;">Заберите ваш смартлон из сервиса.</p>
+                                                </div>
+                                            }
+
+                                            @if (request.ClientApproved == null)
+                                            {
+                                                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                                    <form method="post" action="/repair/respond" style="display: inline;">
+                                                        <input type="hidden" name="id" value="@request.Id" />
+                                                        <input type="hidden" name="approve" value="true" />
+                                                        <button type="submit" class="cta-button" style="padding: 8px 20px; font-size: 13px;">Одобрить ремонт</button>
+                                                    </form>
+                                                    <form method="post" action="/repair/respond" style="display: inline;">
+                                                        <input type="hidden" name="id" value="@request.Id" />
+                                                        <input type="hidden" name="approve" value="false" />
+                                                        <button type="submit" class="cta-button" style="padding: 8px 20px; font-size: 13px; background: #3a3a3a; color: #888;">Отклонить</button>
+                                                    </form>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+
+                                    @if (request.Status == SmartphoneShop.Core.Enums.RepairStatus.DeliveryToCenter)
+                                    {
+                                        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #2c2c2c;">
+                                            <div style="padding: 12px 16px; background: rgba(76,175,80,0.08); border-left: 3px solid #4CAF50; border-radius: 6px;">
+                                                <p style="margin: 0; font-size: 13px; color: #f0f0f0;">Пожалуйста, привезите ваше устройство в сервисный центр для дальнейшего ремонта.</p>
                                             </div>
                                         </div>
                                     }
-                                    
-                                    @if (request.Status == SmartphoneShop.Core.Enums.RepairStatus.Diagnostics || request.Status == SmartphoneShop.Core.Enums.RepairStatus.InRepair)
+
+                                    @if (request.Status == SmartphoneShop.Core.Enums.RepairStatus.Completed)
                                     {
-                                        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #2c2c2c;">
-                                            <form method="post" action="/repair/respond">
-                                                <input type="hidden" name="id" value="@request.Id" />
-                                                <div class="form-group" style="margin-bottom: 10px;">
-                                                    <label class="form-label" style="font-size: 13px;">Ответить мастеру</label>
-                                                    <textarea name="message" class="form-control" rows="2" placeholder="Ваше сообщение..." style="padding: 10px; background: #2c2c2c; border: 1px solid #3a3a3a; border-radius: 8px; color: #f0f0f0; font-size: 13px;"></textarea>
-                                                </div>
-                                                <button type="submit" class="cta-button" style="padding: 8px 20px; font-size: 13px;">Отправить</button>
-                                            </form>
+                                        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #2c2c2c; display: flex; gap: 10px; flex-wrap: wrap;">
+                                            <button type="button" class="cta-button" style="padding: 8px 20px; font-size: 13px; background: #2c2c2c; border: 1px solid #3a3a3a;" onclick='generateRepairReceipt(@request.Id, @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new { model = request.SmartphoneModel, serialNumber = request.SerialNumber, issue = request.IssueDescription, adminNotes = request.AdminNotes, notesForClient = request.NotesForClient, parts = request.RepairSpareParts.Select(p => new { name = p.SparePartName, price = p.SparePartPrice, isAvailable = p.IsAvailable, waitDays = p.EstimatedWaitDays }).ToList(), servicePrice = request.ServicePrice, estimatedPrice = request.EstimatedPrice, isWarranty = request.IsWarranty, isClientFault = request.IsClientFault }, new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase })) )'>Скачать чек</button>
+                                            <button type="button" class="cta-button" style="padding: 8px 20px; font-size: 13px; background: #D44177; color: #fff;" onclick='generateRepairWarranty(@request.Id, @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new { model = request.SmartphoneModel, serialNumber = request.SerialNumber, issue = request.IssueDescription, adminNotes = request.AdminNotes, parts = request.RepairSpareParts.Select(p => new { name = p.SparePartName, price = p.SparePartPrice }).ToList(), masterName = request.MasterUser?.FullName ?? "", clientName = request.User?.FullName ?? "" }, new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase })) )'>Гарантийный лист</button>
                                         </div>
                                     }
                                     
-                                    @if (!string.IsNullOrEmpty(request.ClientMessage))
-                                    {
-                                        <div style="margin-top: 10px; padding: 12px; background: rgba(212, 65, 119, 0.08); border-left: 3px solid #D44177; border-radius: 4px;">
-                                            <p style="margin: 0; color: #f0f0f0; font-size: 14px;"><strong>Ваше сообщение:</strong> @request.ClientMessage</p>
-                                        </div>
-                                    }
                                 </div>
                             }
                         </div>
@@ -287,3 +421,33 @@
         }
     </div>
 </section>
+
+<script>
+    function toggleWarrantyField() {
+        var checkbox = document.getElementById('isWarrantyCheck');
+        var field = document.getElementById('warrantySelectField');
+        var hidden = document.getElementById('isWarrantyHidden');
+        if (checkbox && field) {
+            field.style.display = checkbox.checked ? 'block' : 'none';
+            if (hidden) hidden.value = checkbox.checked ? 'true' : 'false';
+            if (!checkbox.checked) {
+                document.getElementById('warrantyRepairSelect').value = '';
+            }
+        }
+    }
+
+    function fillWarrantyData() {
+        var select = document.getElementById('warrantyRepairSelect');
+        if (!select) return;
+        var option = select.options[select.selectedIndex];
+        if (!option || !option.value) return;
+
+        var modelField = document.getElementById('warrantyModelField');
+        var snField = document.getElementById('warrantySnField');
+        var issueField = document.getElementById('warrantyIssueField');
+
+        if (modelField) modelField.value = option.dataset.model || '';
+        if (snField) snField.value = option.dataset.sn || '';
+        if (issueField) issueField.value = option.dataset.issue || '';
+    }
+</script>

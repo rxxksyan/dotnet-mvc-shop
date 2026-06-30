@@ -14,14 +14,18 @@ public class ProductController : Controller
     private readonly ISmartphoneRepository _smartphoneRepo;
     private readonly IReviewRepository _reviewRepo;
     private readonly IFavoriteRepository _favoriteRepo;
+    private readonly IOrderRepository _orderRepo;
+    private readonly IPurchaseOrderRepository _purchaseOrderRepo;
     private readonly UserManager<AppUser> _userManager;
     private readonly ILogger<ProductController> _logger;
 
-    public ProductController(ISmartphoneRepository smartphoneRepo, IReviewRepository reviewRepo, IFavoriteRepository favoriteRepo, UserManager<AppUser> userManager, ILogger<ProductController> logger)
+    public ProductController(ISmartphoneRepository smartphoneRepo, IReviewRepository reviewRepo, IFavoriteRepository favoriteRepo, IOrderRepository orderRepo, IPurchaseOrderRepository purchaseOrderRepo, UserManager<AppUser> userManager, ILogger<ProductController> logger)
     {
         _smartphoneRepo = smartphoneRepo;
         _reviewRepo = reviewRepo;
         _favoriteRepo = favoriteRepo;
+        _orderRepo = orderRepo;
+        _purchaseOrderRepo = purchaseOrderRepo;
         _userManager = userManager;
         _logger = logger;
     }
@@ -37,6 +41,7 @@ public class ProductController : Controller
 
             bool isFavorite = false;
             bool userHasReview = false;
+            bool userHasPurchased = false;
             int? userReviewId = null;
             string? userReviewComment = null;
             int? userReviewRating = null;
@@ -45,6 +50,8 @@ public class ProductController : Controller
                 var user = await _userManager.GetUserAsync(User);
                 isFavorite = await _favoriteRepo.ExistsAsync(user.Id, id);
                 userHasReview = await _reviewRepo.UserHasReviewAsync(user.Id, id);
+                userHasPurchased = await _orderRepo.UserHasPurchasedSmartphoneAsync(user.Id, id)
+                                || await _purchaseOrderRepo.UserHasDeliveredOrderAsync(user.Id, id);
                 if (userHasReview)
                 {
                     var existing = (await _reviewRepo.GetBySmartphoneIdAsync(id))
@@ -62,6 +69,7 @@ public class ProductController : Controller
             ViewBag.AvgRating = avgRating;
             ViewBag.IsFavorite = isFavorite;
             ViewBag.UserHasReview = userHasReview;
+            ViewBag.UserHasPurchased = userHasPurchased;
             ViewBag.UserReviewId = userReviewId;
             ViewBag.UserReviewComment = userReviewComment;
             ViewBag.UserReviewRating = userReviewRating;
@@ -85,6 +93,14 @@ public class ProductController : Controller
         if (await _reviewRepo.UserHasReviewAsync(userId, smartphoneId))
         {
             TempData["Error"] = "Вы уже оставили отзыв на этот товар";
+            return RedirectToAction("Details", new { id = smartphoneId });
+        }
+
+        bool hasPurchased = await _orderRepo.UserHasPurchasedSmartphoneAsync(userId, smartphoneId)
+                         || await _purchaseOrderRepo.UserHasDeliveredOrderAsync(userId, smartphoneId);
+        if (!hasPurchased)
+        {
+            TempData["Error"] = "Вы можете оставить отзыв только после покупки товара";
             return RedirectToAction("Details", new { id = smartphoneId });
         }
 

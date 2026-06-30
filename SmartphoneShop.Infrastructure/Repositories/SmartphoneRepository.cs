@@ -13,7 +13,7 @@ public class SmartphoneRepository : GenericRepository<Smartphone>, ISmartphoneRe
     public async Task<IEnumerable<Smartphone>> GetFeaturedAsync()
     {
         return await _dbSet
-            .Where(s => s.IsFeatured && s.IsInStock)
+            .Where(s => s.IsFeatured && s.Quantity > 0)
             .OrderByDescending(s => s.PopularityScore)
             .Take(8)
             .ToListAsync();
@@ -50,7 +50,7 @@ public class SmartphoneRepository : GenericRepository<Smartphone>, ISmartphoneRe
             query = query.Where(s => s.Storage == storage.Value);
 
         return await query
-            .Where(s => s.IsInStock)
+            .Where(s => s.Quantity > 0)
             .OrderByDescending(s => s.PopularityScore)
             .ToListAsync();
     }
@@ -99,7 +99,7 @@ public class SmartphoneRepository : GenericRepository<Smartphone>, ISmartphoneRe
         };
 
         return await query
-            .Where(s => s.IsInStock)
+            .Where(s => s.Quantity > 0)
             .ToPagedListAsync(pageNumber, pageSize);
     }
 

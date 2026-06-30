@@ -90,8 +90,10 @@
         border: 1px solid #2c2c2c;
         border-radius: 12px;
         padding: 30px;
-        max-width: 480px;
+        max-width: 600px;
         width: 90%;
+        max-height: 85vh;
+        overflow-y: auto;
     }
     .modal-content h3 {
         margin: 0 0 8px 0;
@@ -105,6 +107,7 @@
         border-radius: 8px;
         color: #f0f0f0;
         font-size: 14px;
+        box-sizing: border-box;
     }
     .form-control:focus { outline: none; border-color: #D44177; }
     .form-label {
@@ -127,10 +130,125 @@
         color: #666;
         margin-top: 4px;
     }
+    .spare-parts-section {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #3a3a3a;
+        display: none;
+    }
+    .spare-parts-section.active { display: block; }
+    .spare-part-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px;
+        background: #252525;
+        border: 1px solid #3a3a3a;
+        border-radius: 8px;
+        margin-bottom: 8px;
+    }
+    .spare-part-item .part-info {
+        flex: 1;
+        min-width: 0;
+    }
+    .spare-part-item .part-name {
+        font-size: 14px;
+        color: #f0f0f0;
+        font-weight: 500;
+    }
+    .spare-part-item .part-price {
+        font-size: 13px;
+        color: #D44177;
+    }
+    .spare-part-item .part-remove {
+        background: none;
+        border: none;
+        color: #888;
+        cursor: pointer;
+        font-size: 18px;
+        padding: 4px;
+    }
+    .spare-part-item .part-remove:hover { color: #ff4444; }
+    .search-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: #2c2c2c;
+        border: 1px solid #3a3a3a;
+        border-radius: 8px;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 100;
+        display: none;
+    }
+    .search-results.active { display: block; }
+    .search-result-item {
+        padding: 10px 14px;
+        cursor: pointer;
+        border-bottom: 1px solid #3a3a3a;
+        color: #f0f0f0;
+    }
+    .search-result-item:last-child { border-bottom: none; }
+    .search-result-item:hover { background: rgba(212, 65, 119, 0.1); }
+    .search-result-item .result-name { font-size: 14px; }
+    .search-result-item .result-price { font-size: 12px; color: #D44177; }
+    .search-result-item .result-qty { font-size: 12px; color: #888; }
+    .search-wrapper { position: relative; }
+    .part-availability {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 6px;
+        font-size: 13px;
+    }
+    .part-availability label {
+        color: #b0b0b0;
+        cursor: pointer;
+    }
+    .part-availability input[type="checkbox"] {
+        accent-color: #D44177;
+    }
+    .wait-days-input {
+        width: 120px;
+        padding: 6px 10px;
+        background: #2c2c2c;
+        border: 1px solid #3a3a3a;
+        border-radius: 6px;
+        color: #f0f0f0;
+        font-size: 13px;
+    }
+    .manual-part-form {
+        padding: 12px;
+        background: #252525;
+        border: 1px solid #3a3a3a;
+        border-radius: 8px;
+        margin-top: 10px;
+        display: none;
+    }
+    .manual-part-form.active { display: block; }
+    .manual-part-form .form-row {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 8px;
+    }
+    .manual-part-form .form-row input {
+        flex: 1;
+    }
+    .parts-total {
+        margin-top: 10px;
+        padding: 10px;
+        background: rgba(212, 65, 119, 0.1);
+        border-radius: 8px;
+        font-size: 14px;
+        color: #D44177;
+        font-weight: 500;
+        text-align: right;
+    }
 </style>
 
 <section>
-    <div class="container">
+    <div class="container" style="max-width: 100%; padding: 0 16px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <h2 class="section-title" style="margin: 0;">Заявки на ремонт</h2>
         </div>
@@ -173,6 +291,7 @@
                             <th>Мастер</th>
                             <th>Статус</th>
                             <th>Цена</th>
+                            <th>Запчасти</th>
                             <th>Решение клиента</th>
                             <th>Действия</th>
                         </tr>
@@ -185,13 +304,17 @@
                                 <td>@repair.User?.FullName</td>
                                 <td>
                                     @repair.SmartphoneModel
+                                    @if (!string.IsNullOrEmpty(repair.SerialNumber))
+                                    {
+                                        <div style="font-size: 12px; color: #888; margin-top: 2px;">SN: @repair.SerialNumber</div>
+                                    }
                                     @if (!string.IsNullOrEmpty(repair.IssueDescription))
                                     {
                                         <div class="repair-info">@repair.IssueDescription</div>
                                     }
                                     @if (!string.IsNullOrEmpty(repair.AdminNotes))
                                     {
-                                        <div class="admin-notes">📝 @repair.AdminNotes</div>
+                                        <div class="admin-notes">@repair.AdminNotes</div>
                                     }
                                 </td>
                                 <td>@repair.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
@@ -201,12 +324,12 @@
                                         var statusClass = repair.Status switch
                                         {
                                             SmartphoneShop.Core.Enums.RepairStatus.New => "status-new",
-                                            SmartphoneShop.Core.Enums.RepairStatus.DeliveryToCenter or 
-                                                SmartphoneShop.Core.Enums.RepairStatus.AcceptedAtCenter or 
-                                                SmartphoneShop.Core.Enums.RepairStatus.InQueue or 
-                                                SmartphoneShop.Core.Enums.RepairStatus.Diagnostics or 
+                                            SmartphoneShop.Core.Enums.RepairStatus.DeliveryToCenter or
+                                                SmartphoneShop.Core.Enums.RepairStatus.AcceptedAtCenter or
+                                                SmartphoneShop.Core.Enums.RepairStatus.InQueue or
+                                                SmartphoneShop.Core.Enums.RepairStatus.Diagnostics or
                                                 SmartphoneShop.Core.Enums.RepairStatus.RepairApproval => "status-pending",
-                                            SmartphoneShop.Core.Enums.RepairStatus.InRepair or 
+                                            SmartphoneShop.Core.Enums.RepairStatus.InRepair or
                                                 SmartphoneShop.Core.Enums.RepairStatus.ReadyForPickup => "status-in-progress",
                                             SmartphoneShop.Core.Enums.RepairStatus.Completed => "status-completed",
                                             SmartphoneShop.Core.Enums.RepairStatus.Cancelled => "status-cancelled",
@@ -230,31 +353,64 @@
                                     <span class="status-badge @statusClass">@statusText</span>
                                 </td>
                                 <td>
-                                    @(repair.EstimatedPrice.HasValue ? repair.EstimatedPrice.Value.ToString("N0") + " BYN" : "-")
+                                    @{
+                                        if (repair.ClientApproved == false && repair.EstimatedPrice.HasValue)
+                                        {
+                                            <span style="color: #888;">@repair.EstimatedPrice.Value.ToString("N0") BYN</span>
+                                        }
+                                        else if (repair.IsWarranty && !repair.IsClientFault)
+                                        {
+                                            <span style="color: #4CAF50;">0 BYN</span>
+                                        }
+                                        else
+                                        {
+                                            var partsTotalTable = repair.RepairSpareParts.Sum(p => p.SparePartPrice);
+                                            var totalTable = partsTotalTable + (repair.ServicePrice ?? 0);
+                                            if (totalTable > 0)
+                                            {
+                                                <span>@totalTable.ToString("N0") BYN</span>
+                                            }
+                                            else
+                                            {
+                                                <span>-</span>
+                                            }
+                                        }
+                                    }
+                                </td>
+                                <td>
+                                    @if (repair.RepairSpareParts.Any())
+                                    {
+                                        var partNames = string.Join(", ", repair.RepairSpareParts.Select(p => p.SparePartName));
+                                        <span style="color: #D44177; font-size: 13px; cursor: help;" title="@partNames">@repair.RepairSpareParts.Count шт.</span>
+                                    }
+                                    else
+                                    {
+                                        <span style="color: #666;">—</span>
+                                    }
                                 </td>
                                 <td>
                                     @if (repair.Status == SmartphoneShop.Core.Enums.RepairStatus.RepairApproval)
                                     {
                                         if (repair.ClientApproved == true)
                                         {
-                                            <span style="color: #D44177;">✓ Одобрено</span>
+                                            <span style="color: #D44177;">Одобрено</span>
                                         }
                                         else if (repair.ClientApproved == false)
                                         {
-                                            <span style="color: #888;">✗ Отклонено</span>
+                                            <span style="color: #888;">Отклонено</span>
                                         }
                                         else
                                         {
-                                            <span style="color: #b0b0b0;">⏳ Ждёт решения</span>
+                                            <span style="color: #b0b0b0;">Ждёт решения</span>
                                         }
                                     }
                                     else if (repair.ClientApproved == true)
                                     {
-                                        <span style="color: #D44177;">✓ Да</span>
+                                        <span style="color: #D44177;">Да</span>
                                     }
                                     else if (repair.ClientApproved == false)
                                     {
-                                        <span style="color: #888;">✗ Нет</span>
+                                        <span style="color: #888;">Нет</span>
                                     }
                                     else
                                     {
@@ -262,12 +418,13 @@
                                     }
                                 </td>
                                 <td>
-                                    <button type="button" 
-                                            class="btn-sm btn-primary repair-action-btn" 
-                                            data-repair-id="@repair.Id" 
+                                    <button type="button"
+                                            class="btn-sm btn-primary repair-action-btn"
+                                            data-repair-id="@repair.Id"
                                             data-repair-status="@repair.Status"
                                             data-client-approved="@repair.ClientApproved"
-                                            @(repair.Status == SmartphoneShop.Core.Enums.RepairStatus.Completed || 
+                                            data-repair-warranty="@repair.IsWarranty"
+                                            @(repair.Status == SmartphoneShop.Core.Enums.RepairStatus.Completed ||
                                               repair.Status == SmartphoneShop.Core.Enums.RepairStatus.Cancelled ? "disabled" : "")>
                                         Изменить статус
                                     </button>
@@ -285,26 +442,79 @@
     <div class="modal-content">
         <h3>Изменить статус</h3>
         <p id="repairModalInfo"></p>
-        
+
         <form id="repairStatusForm" method="post" action="/adminrepairs/updatestatus">
             @Html.AntiForgeryToken()
             <input type="hidden" name="id" id="repairId" />
-            
+
             <div class="form-group" style="margin-bottom: 15px;">
                 <label class="form-label">Новый статус</label>
                 <select name="status" class="form-control" id="statusSelect" required></select>
                 <p id="statusWarning" style="color: #b0b0b0; font-size: 12px; margin-top: 8px; display: none;"></p>
             </div>
-            
-            <div class="form-group" style="margin-bottom: 20px;">
-                <label class="form-label">Стоимость ремонта (BYN)</label>
-                <input type="number" name="estimatedPrice" class="form-control" step="0.01" placeholder="Необязательно" />
+
+            <div id="diagnosticFieldsSection" style="display: none;">
+                <div id="warrantyClientFaultSection" style="display: none; padding: 14px 18px; background: rgba(212,65,119,0.06); border: 1px solid rgba(212,65,119,0.2); border-radius: 8px; margin-bottom: 20px;">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <input type="checkbox" id="isClientFaultCheck" onchange="toggleWarrantyPricing()" style="accent-color: #D44177; width: 18px; height: 18px;" />
+                        <span style="color: #f0f0f0; font-size: 14px;">Поломка по вине клиента</span>
+                    </label>
+                    <p style="margin: 6px 0 0 28px; font-size: 12px; color: #888;">Если устройство на гарантии, но поломка вызвана неправильной эксплуатацией</p>
+                </div>
+                <input type="hidden" name="isClientFault" id="isClientFaultHidden" value="false" />
+
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label class="form-label">Комментарий мастера</label>
+                    <textarea name="adminNotes" class="form-control" rows="3" placeholder="Опишите что произошло с устройством..."></textarea>
+                </div>
+
+                <div id="pricingFieldsSection">
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label class="form-label">Стоимость диагностики (BYN) *</label>
+                        <input type="number" name="estimatedPrice" id="estimatedPriceInput" class="form-control" step="0.01" placeholder="Введите стоимость диагностики..." />
+                        <p id="priceRequired" style="color: #D44177; font-size: 12px; margin-top: 4px; display: none;">* Обязательное поле</p>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label class="form-label">Стоимость услуги мастера (BYN)</label>
+                        <input type="number" name="servicePrice" id="servicePriceInput" class="form-control" step="0.01" placeholder="Цена за работу (необязательно)" />
+                    </div>
+                </div>
+
+                <div id="sparePartsSection" class="spare-parts-section active">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <label class="form-label" style="margin: 0; font-size: 14px; color: #f0f0f0;">Запчасти для ремонта</label>
+                    </div>
+
+                    <div class="search-wrapper" style="margin-bottom: 12px;">
+                        <input type="text" id="sparePartSearch" class="form-control" placeholder="Поиск запчастей в каталоге..." autocomplete="off" style="padding-right: 36px;" />
+                        <div id="sparePartResults" class="search-results"></div>
+                    </div>
+
+                    <div id="selectedParts"></div>
+
+                    <div id="partsTotal" class="parts-total" style="display: none;">
+                        Итого запчасти: <span id="partsTotalSum">0</span> BYN
+                    </div>
+
+                    <button type="button" id="toggleManualPart" class="btn-sm" style="background: #2c2c2c; color: #b0b0b0; border: 1px solid #3a3a3a; margin-top: 10px; margin-bottom: 8px;">
+                        + Деталь не из каталога
+                    </button>
+
+                    <div id="manualPartForm" class="manual-part-form">
+                        <div class="form-row">
+                            <input type="text" id="manualPartName" class="form-control" placeholder="Название детали" />
+                            <input type="number" id="manualPartPrice" class="form-control" placeholder="Цена (BYN)" step="0.01" />
+                        </div>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <button type="button" id="addManualPart" class="btn-sm btn-primary">Добавить</button>
+                            <button type="button" id="cancelManualPart" class="btn-sm" style="background: #2c2c2c; color: #888;">Отмена</button>
+                        </div>
+                    </div>
+                </div>
             </div>
-            
-            <div class="form-group" style="margin-bottom: 20px;">
-                <label class="form-label">Комментарий мастера</label>
-                <textarea name="adminNotes" class="form-control" rows="3" placeholder="Добавьте комментарий для пользователя..."></textarea>
-            </div>
+
+            <input type="hidden" name="selectedPartsJson" id="selectedPartsJson" />
 
             <div style="display: flex; gap: 10px;">
                 <button type="submit" class="cta-button" style="flex: 1;">Сохранить</button>
@@ -315,20 +525,13 @@
 </div>
 
 <script>
-    // Порядок статусов (нельзя идти назад или перескакивать)
     var statusOrder = ['New', 'DeliveryToCenter', 'AcceptedAtCenter', 'InQueue', 'Diagnostics', 'RepairApproval', 'InRepair', 'ReadyForPickup', 'Completed'];
+    var selectedPartsList = [];
+    var searchTimeout = null;
 
-    // Допустимые переходы статусов
     function getAllowedTransitions(currentStatus, clientApproved) {
-        // Финальные статусы - нельзя менять
-        if (currentStatus === 'Completed' || currentStatus === 'Cancelled') {
-            return [];
-        }
-
-        // Если клиент отклонил и уже Cancelled
-        if (clientApproved === 'False' && currentStatus === 'Cancelled') {
-            return [];
-        }
+        if (currentStatus === 'Completed' || currentStatus === 'Cancelled') return [];
+        if (clientApproved === 'False' && currentStatus === 'Cancelled') return [];
 
         var transitions = {
             'New': ['DeliveryToCenter', 'Cancelled'],
@@ -340,31 +543,19 @@
             'ReadyForPickup': ['Completed', 'Cancelled']
         };
 
-        // RepairApproval зависит от решения клиента
         if (currentStatus === 'RepairApproval') {
-            if (clientApproved === 'True') {
-                return ['InRepair', 'Cancelled'];
-            } else if (clientApproved === 'False') {
-                return []; // Уже должно быть Cancelled
-            } else {
-                return ['Cancelled']; // Ждём клиента, можно только отменить
-            }
+            if (clientApproved === 'True') return ['InRepair', 'Cancelled'];
+            else if (clientApproved === 'False') return [];
+            else return ['Cancelled'];
         }
 
         return transitions[currentStatus] || [];
     }
 
     var statusNames = {
-        'New': 'Новая',
-        'DeliveryToCenter': 'Доставка в центр',
-        'AcceptedAtCenter': 'Принят в центр',
-        'InQueue': 'В очереди',
-        'Diagnostics': 'Диагностика',
-        'RepairApproval': 'Ожидает одобрения',
-        'InRepair': 'В ремонте',
-        'ReadyForPickup': 'Готов к выдаче',
-        'Completed': 'Завершён',
-        'Cancelled': 'Отменён'
+        'New': 'Новая', 'DeliveryToCenter': 'Доставка в центр', 'AcceptedAtCenter': 'Принят в центр',
+        'InQueue': 'В очереди', 'Diagnostics': 'Диагностика', 'RepairApproval': 'Ожидает одобрения',
+        'InRepair': 'В ремонте', 'ReadyForPickup': 'Готов к выдаче', 'Completed': 'Завершён', 'Cancelled': 'Отменён'
     };
 
     document.querySelectorAll('.repair-action-btn').forEach(function(btn) {
@@ -372,15 +563,17 @@
             var repairId = this.dataset.repairId;
             var repairStatus = this.dataset.repairStatus;
             var clientApproved = this.dataset.clientApproved;
-            
+            var isWarranty = this.dataset.repairWarranty === 'True';
+
             document.getElementById('repairId').value = repairId;
-            document.getElementById('repairModalInfo').textContent = 'Заявка #' + repairId;
-            
+            document.getElementById('repairModalInfo').innerHTML = 'Заявка #' + repairId + (isWarranty ? ' <span style="color:#4CAF50; font-size:12px; padding:2px 8px; background:rgba(76,175,80,0.1); border:1px solid rgba(76,175,80,0.3); border-radius:10px; margin-left:6px;">По гарантии</span>' : '');
+            currentRepairIsWarranty = isWarranty;
+
             var statusSelect = document.getElementById('statusSelect');
             statusSelect.innerHTML = '';
-            
+
             var allowed = getAllowedTransitions(repairStatus, clientApproved);
-            
+
             if (allowed.length === 0) {
                 var option = document.createElement('option');
                 option.value = '';
@@ -396,7 +589,7 @@
                     statusSelect.appendChild(option);
                 });
             }
-            
+
             var warningEl = document.getElementById('statusWarning');
             if (repairStatus === 'RepairApproval') {
                 if (clientApproved === undefined || clientApproved === '' || clientApproved === null) {
@@ -413,19 +606,250 @@
             } else {
                 warningEl.style.display = 'none';
             }
-            
-            // Очищаем предыдущие значения
+
             document.querySelector('input[name="estimatedPrice"]').value = '';
-            document.querySelector('textarea[name="adminNotes"]').value = '';
-            
+            document.querySelector('input[name="servicePrice"]').value = '';
+            var adminNotesFields = document.querySelectorAll('textarea[name="adminNotes"]');
+            adminNotesFields.forEach(function(el) { el.value = ''; });
+
+            document.getElementById('isClientFaultCheck').checked = false;
+            document.getElementById('isClientFaultHidden').value = 'false';
+
+            selectedPartsList = [];
+            renderSelectedParts();
+            updateSparePartsVisibility();
+
             document.getElementById('repairModal').classList.add('active');
         });
     });
-    
+
+    document.getElementById('statusSelect').addEventListener('change', function() {
+        updateSparePartsVisibility();
+    });
+
+    var currentRepairIsWarranty = false;
+
+    function updateSparePartsVisibility() {
+        var status = document.getElementById('statusSelect').value;
+        var diagSection = document.getElementById('diagnosticFieldsSection');
+        var warrantyFaultSection = document.getElementById('warrantyClientFaultSection');
+        var pricingFields = document.getElementById('pricingFieldsSection');
+        var sparePartsSection = document.getElementById('sparePartsSection');
+        if (status === 'RepairApproval') {
+            diagSection.style.display = 'block';
+            warrantyFaultSection.style.display = currentRepairIsWarranty ? 'block' : 'none';
+            sparePartsSection.style.display = 'block';
+            if (currentRepairIsWarranty && !document.getElementById('isClientFaultCheck').checked) {
+                pricingFields.style.display = 'none';
+                document.getElementById('estimatedPriceInput').required = false;
+                document.getElementById('estimatedPriceInput').value = '0';
+                document.getElementById('servicePriceInput').value = '0';
+            } else {
+                pricingFields.style.display = 'block';
+                document.getElementById('estimatedPriceInput').required = true;
+            }
+        } else {
+            diagSection.style.display = 'none';
+            warrantyFaultSection.style.display = 'none';
+            sparePartsSection.style.display = 'none';
+            pricingFields.style.display = 'block';
+            document.getElementById('estimatedPriceInput').required = false;
+        }
+    }
+
+    document.getElementById('sparePartSearch').addEventListener('input', function() {
+        var query = this.value.trim();
+        var resultsDiv = document.getElementById('sparePartResults');
+
+        if (searchTimeout) clearTimeout(searchTimeout);
+
+        if (query.length < 2) {
+            resultsDiv.classList.remove('active');
+            resultsDiv.innerHTML = '';
+            return;
+        }
+
+        searchTimeout = setTimeout(function() {
+            fetch('/adminrepairs/searchspareparts?query=' + encodeURIComponent(query))
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    resultsDiv.innerHTML = '';
+                    if (data.length === 0) {
+                        resultsDiv.innerHTML = '<div class="search-result-item" style="color: #888;">Ничего не найдено</div>';
+                        resultsDiv.classList.add('active');
+                        return;
+                    }
+                    data.forEach(function(part) {
+                        var item = document.createElement('div');
+                        item.className = 'search-result-item';
+                        item.innerHTML = '<div class="result-name">' + part.name + '</div>' +
+                            '<div><span class="result-price">' + part.price.toFixed(2) + ' BYN</span> ' +
+                            '<span class="result-qty">(остаток: ' + part.quantity + ')</span></div>';
+                        item.addEventListener('click', function() {
+                            addPartFromCatalog(part);
+                            document.getElementById('sparePartSearch').value = '';
+                            resultsDiv.classList.remove('active');
+                            resultsDiv.innerHTML = '';
+                        });
+                        resultsDiv.appendChild(item);
+                    });
+                    resultsDiv.classList.add('active');
+                });
+        }, 300);
+    });
+
+    document.addEventListener('click', function(e) {
+        var resultsDiv = document.getElementById('sparePartResults');
+        var searchInput = document.getElementById('sparePartSearch');
+        if (!resultsDiv.contains(e.target) && e.target !== searchInput) {
+            resultsDiv.classList.remove('active');
+        }
+    });
+
+    function addPartFromCatalog(part) {
+        selectedPartsList.push({
+            sparePartId: part.id,
+            name: part.name,
+            price: part.price,
+            isAvailable: true,
+            estimatedWaitDays: null,
+            fromCatalog: true
+        });
+        renderSelectedParts();
+    }
+
+    document.getElementById('toggleManualPart').addEventListener('click', function() {
+        var form = document.getElementById('manualPartForm');
+        form.classList.toggle('active');
+    });
+
+    document.getElementById('cancelManualPart').addEventListener('click', function() {
+        document.getElementById('manualPartForm').classList.remove('active');
+        document.getElementById('manualPartName').value = '';
+        document.getElementById('manualPartPrice').value = '';
+    });
+
+    document.getElementById('addManualPart').addEventListener('click', function() {
+        var name = document.getElementById('manualPartName').value.trim();
+        var price = parseFloat(document.getElementById('manualPartPrice').value);
+
+        if (!name || isNaN(price) || price <= 0) {
+            alert('Заполните название и корректную цену');
+            return;
+        }
+
+        selectedPartsList.push({
+            sparePartId: null,
+            name: name,
+            price: price,
+            isAvailable: false,
+            estimatedWaitDays: null,
+            fromCatalog: false
+        });
+        renderSelectedParts();
+
+        document.getElementById('manualPartName').value = '';
+        document.getElementById('manualPartPrice').value = '';
+        document.getElementById('manualPartForm').classList.remove('active');
+    });
+
+    function removePart(index) {
+        selectedPartsList.splice(index, 1);
+        renderSelectedParts();
+    }
+
+    function toggleAvailability(index) {
+        selectedPartsList[index].isAvailable = !selectedPartsList[index].isAvailable;
+        renderSelectedParts();
+    }
+
+    function setWaitDays(index, value) {
+        selectedPartsList[index].estimatedWaitDays = parseInt(value) || null;
+    }
+
+    function renderSelectedParts() {
+        var container = document.getElementById('selectedParts');
+        container.innerHTML = '';
+
+        selectedPartsList.forEach(function(part, index) {
+            var div = document.createElement('div');
+            div.className = 'spare-part-item';
+
+            var availHtml = '';
+            if (part.fromCatalog) {
+                availHtml = '<div class="part-availability">' +
+                    '<input type="checkbox" id="avail_' + index + '" ' + (part.isAvailable ? 'checked' : '') + ' onchange="toggleAvailability(' + index + ')" />' +
+                    '<label for="avail_' + index + '">В наличии</label>' +
+                    (!part.isAvailable ? '<input type="number" class="wait-days-input" placeholder="Дней ожидания" value="' + (part.estimatedWaitDays || '') + '" onchange="setWaitDays(' + index + ', this.value)" min="1" />' : '') +
+                    '</div>';
+            } else {
+                availHtml = '<div class="part-availability">' +
+                    '<input type="checkbox" id="avail_' + index + '" ' + (part.isAvailable ? 'checked' : '') + ' onchange="toggleAvailability(' + index + ')" />' +
+                    '<label for="avail_' + index + '">В наличии</label>' +
+                    (!part.isAvailable ? '<input type="number" class="wait-days-input" placeholder="Дней ожидания" value="' + (part.estimatedWaitDays || '') + '" onchange="setWaitDays(' + index + ', this.value)" min="1" />' : '') +
+                    '</div>';
+            }
+
+            div.innerHTML = '<div class="part-info">' +
+                '<div class="part-name">' + part.name + '</div>' +
+                '<div class="part-price">' + part.price.toFixed(2) + ' BYN' + (part.fromCatalog ? '' : ' (вручную)') + '</div>' +
+                availHtml +
+                '</div>' +
+                '<button type="button" class="part-remove" onclick="removePart(' + index + ')">&times;</button>';
+
+            container.appendChild(div);
+        });
+
+        var total = selectedPartsList.reduce(function(sum, p) { return sum + p.price; }, 0);
+        var totalEl = document.getElementById('partsTotal');
+        if (selectedPartsList.length > 0) {
+            totalEl.style.display = 'block';
+            document.getElementById('partsTotalSum').textContent = total.toFixed(2);
+        } else {
+            totalEl.style.display = 'none';
+        }
+    }
+
+    function toggleWarrantyPricing() {
+        var checkbox = document.getElementById('isClientFaultCheck');
+        var pricingFields = document.getElementById('pricingFieldsSection');
+        var hidden = document.getElementById('isClientFaultHidden');
+        if (checkbox.checked) {
+            pricingFields.style.display = 'block';
+            document.getElementById('estimatedPriceInput').required = true;
+            hidden.value = 'true';
+        } else {
+            pricingFields.style.display = 'none';
+            document.getElementById('estimatedPriceInput').required = false;
+            document.getElementById('estimatedPriceInput').value = '0';
+            document.getElementById('servicePriceInput').value = '0';
+            hidden.value = 'false';
+        }
+    }
+
+    document.getElementById('repairStatusForm').addEventListener('submit', function(e) {
+        var status = document.getElementById('statusSelect').value;
+        document.getElementById('isClientFaultHidden').value = document.getElementById('isClientFaultCheck').checked ? 'true' : 'false';
+        if (status === 'RepairApproval') {
+            var price = document.getElementById('estimatedPriceInput').value;
+            var isWarrantyNoFault = currentRepairIsWarranty && !document.getElementById('isClientFaultCheck').checked;
+            if (isWarrantyNoFault) {
+                document.getElementById('estimatedPriceInput').value = '0';
+                document.getElementById('servicePriceInput').value = '0';
+            } else if (!price || parseFloat(price) <= 0) {
+                e.preventDefault();
+                alert('Укажите стоимость диагностики для перехода на одобрение.');
+                document.getElementById('estimatedPriceInput').focus();
+                return false;
+            }
+        }
+        document.getElementById('selectedPartsJson').value = JSON.stringify(selectedPartsList);
+    });
+
     function closeRepairModal() {
         document.getElementById('repairModal').classList.remove('active');
     }
-    
+
     document.getElementById('repairModal').addEventListener('click', function(e) {
         if (e.target === this) closeRepairModal();
     });

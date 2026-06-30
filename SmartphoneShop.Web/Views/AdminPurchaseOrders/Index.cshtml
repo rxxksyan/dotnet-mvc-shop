@@ -108,13 +108,6 @@
             <h2 class="section-title" style="margin: 0;">Заявки на покупку</h2>
         </div>
 
-        @if (TempData["Message"] != null)
-        {
-            <div style="padding: 15px; margin-bottom: 20px; background: rgba(46,204,113,0.1); border: 1px solid #2ecc71; border-radius: 8px; color: #2ecc71;">
-                @TempData["Message"]
-            </div>
-        }
-
         @if (TempData["Error"] != null)
         {
             <div style="padding: 15px; margin-bottom: 20px; background: rgba(231,76,60,0.1); border: 1px solid #e74c3c; border-radius: 8px; color: #e74c3c;">

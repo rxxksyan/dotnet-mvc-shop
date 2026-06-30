@@ -46,4 +46,13 @@ public class OrderRepository : GenericRepository<Order>, IOrderRepository
             .OrderByDescending(o => o.CreatedAt)
             .ToListAsync();
     }
+
+    public async Task<bool> UserHasPurchasedSmartphoneAsync(string userId, int smartphoneId)
+    {
+        return await _dbSet
+            .Include(o => o.Items)
+            .AnyAsync(o => o.UserId == userId
+                        && o.Status == Core.Enums.OrderStatus.Delivered
+                        && o.Items.Any(i => i.SmartphoneId == smartphoneId));
+    }
 }

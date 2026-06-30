@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SmartphoneShop.Infrastructure.Data;
 
@@ -10,9 +11,11 @@ using SmartphoneShop.Infrastructure.Data;
 namespace SmartphoneShop.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260629154942_AddSpareParts")]
+    partial class AddSpareParts
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -522,16 +525,6 @@ namespace SmartphoneShop.Infrastructure.Migrations
                     b.Property<string>("MasterUserId")
                         .HasColumnType("varchar(255)");
 
-                    b.Property<string>("NotesForClient")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("SerialNumber")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<decimal?>("ServicePrice")
-                        .HasColumnType("decimal(10,2)");
-
                     b.Property<string>("SmartphoneModel")
                         .IsRequired()
                         .HasColumnType("longtext");
@@ -555,40 +548,6 @@ namespace SmartphoneShop.Infrastructure.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("RepairRequests");
-                });
-
-            modelBuilder.Entity("SmartphoneShop.Core.Entities.RepairSparePart", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<int?>("EstimatedWaitDays")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsAvailable")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<int>("RepairRequestId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("SparePartId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("SparePartName")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<decimal>("SparePartPrice")
-                        .HasColumnType("decimal(10,2)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RepairRequestId");
-
-                    b.HasIndex("SparePartId");
-
-                    b.ToTable("RepairSpareParts");
                 });
 
             modelBuilder.Entity("SmartphoneShop.Core.Entities.Review", b =>
@@ -660,6 +619,9 @@ namespace SmartphoneShop.Infrastructure.Migrations
                     b.Property<bool>("IsFeatured")
                         .HasColumnType("tinyint(1)");
 
+                    b.Property<bool>("IsInStock")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<string>("MainCamera")
                         .HasColumnType("longtext");
 
@@ -685,9 +647,6 @@ namespace SmartphoneShop.Infrastructure.Migrations
 
                     b.Property<string>("Processor")
                         .HasColumnType("longtext");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
 
                     b.Property<int?>("RAM")
                         .HasColumnType("int");
@@ -974,24 +933,6 @@ namespace SmartphoneShop.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("SmartphoneShop.Core.Entities.RepairSparePart", b =>
-                {
-                    b.HasOne("SmartphoneShop.Core.Entities.RepairRequest", "RepairRequest")
-                        .WithMany("RepairSpareParts")
-                        .HasForeignKey("RepairRequestId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("SmartphoneShop.Core.Entities.SparePart", "SparePart")
-                        .WithMany()
-                        .HasForeignKey("SparePartId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("RepairRequest");
-
-                    b.Navigation("SparePart");
-                });
-
             modelBuilder.Entity("SmartphoneShop.Core.Entities.Review", b =>
                 {
                     b.HasOne("SmartphoneShop.Core.Entities.Smartphone", "Smartphone")
@@ -1043,11 +984,6 @@ namespace SmartphoneShop.Infrastructure.Migrations
             modelBuilder.Entity("SmartphoneShop.Core.Entities.Order", b =>
                 {
                     b.Navigation("Items");
-                });
-
-            modelBuilder.Entity("SmartphoneShop.Core.Entities.RepairRequest", b =>
-                {
-                    b.Navigation("RepairSpareParts");
                 });
 
             modelBuilder.Entity("SmartphoneShop.Core.Entities.Smartphone", b =>

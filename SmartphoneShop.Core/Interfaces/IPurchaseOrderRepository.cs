@@ -12,4 +12,5 @@ public interface IPurchaseOrderRepository
     Task UpdateAsync(PurchaseOrder purchaseOrder);
     Task DeleteAsync(int id);
     Task<bool> UserHasPendingOrderAsync(string userId, int smartphoneId);
+    Task<bool> UserHasDeliveredOrderAsync(string userId, int smartphoneId);
 }

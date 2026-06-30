@@ -29,7 +29,7 @@ public class SmartphoneFormViewModel
     public IFormFile[]? ImageFiles { get; set; }
     public string? PhotosToDelete { get; set; }
     public string? Description { get; set; }
-    public bool IsInStock { get; set; } = true;
+    public int Quantity { get; set; } = 0;
     public bool IsFeatured { get; set; }
     public DateTime? CreatedAt { get; set; }
 }

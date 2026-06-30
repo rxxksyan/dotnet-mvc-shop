@@ -77,7 +77,7 @@ public class CartController : Controller
                 return NotFound();
             }
 
-            if (!smartphone.IsInStock)
+            if (smartphone.Quantity <= 0)
             {
                 _logger.LogWarning("Attempt to add out-of-stock smartphone {SmartphoneId} to cart | Session: {SessionId} | User: {UserId}",
                     smartphoneId, HttpContext.Session.Id, User.Identity?.Name ?? "Anonymous");
@@ -137,6 +137,12 @@ public class CartController : Controller
             }
             else
             {
+                var smartphone = await _smartphoneRepo.GetByIdAsync(item.SmartphoneId);
+                if (smartphone != null && quantity > smartphone.Quantity)
+                {
+                    TempData["Message"] = $"На складе осталось только {smartphone.Quantity} шт. — количество установлено на максимум";
+                    quantity = smartphone.Quantity;
+                }
                 item.Quantity = quantity;
                 await _cartRepo.UpdateItemAsync(item);
             }

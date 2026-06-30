@@ -8,20 +8,6 @@
     <div class="container">
         <h2 class="section-title">Сравнение смартфонов</h2>
         
-        @if (TempData["Message"] != null)
-        {
-            <div class="service-card" style="margin-bottom: 30px;">
-                <p>@TempData["Message"]</p>
-            </div>
-        }
-
-        @if (TempData["Error"] != null)
-        {
-            <div class="service-card" style="margin-bottom: 30px;">
-                <p>@TempData["Error"]</p>
-            </div>
-        }
-
         @if (Model.Items.Any())
         {
             <div style="overflow-x: auto;">
