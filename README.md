@@ -141,5 +141,6 @@ dotnet run --project SmartphoneShop.Web
 | **User** | `testuser@test.com` | Обычный покупатель |
 | **ProductAdmin** | `prodadmin2@test.com` | Управление каталогом товаров |
 | **RepairSpecialist** | `repair@smartshop.com` | Управление заявками на ремонт |
+| **Expert** | `folk@smartshop.com` | Народные обзоры |
 
 > Сервер запускается на `http://localhost:5023` (см. `Properties/launchSettings.json`).
