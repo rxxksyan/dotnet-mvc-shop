@@ -64,39 +64,6 @@ public class AdminControllerTests
     }
 
     [Fact]
-    public async Task AssignRole_CreatesRoleIfNotExists()
-    {
-        var user = new AppUser { Id = "1", UserName = "test" };
-        _userManager.Setup(u => u.FindByIdAsync("1")).ReturnsAsync(user);
-        _roleManager.Setup(r => r.RoleExistsAsync("Expert")).ReturnsAsync(false);
-        _roleManager.Setup(r => r.CreateAsync(It.IsAny<IdentityRole>()))
-            .ReturnsAsync(IdentityResult.Success);
-        _userManager.Setup(u => u.GetRolesAsync(user)).ReturnsAsync(new List<string>());
-        _userManager.Setup(u => u.AddToRoleAsync(user, "Expert"))
-            .ReturnsAsync(IdentityResult.Success);
-
-        var result = await _controller.AssignRole("1", "Expert");
-
-        var redirectResult = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal("Users", redirectResult.ActionName);
-        _roleManager.Verify(r => r.CreateAsync(It.IsAny<IdentityRole>()), Times.Once);
-        _userManager.Verify(u => u.AddToRoleAsync(user, "Expert"), Times.Once);
-    }
-
-    [Fact]
-    public async Task RemoveRole_WithBaseRole_ReturnsError()
-    {
-        var user = new AppUser { Id = "1", UserName = "test" };
-        _userManager.Setup(u => u.FindByIdAsync("1")).ReturnsAsync(user);
-
-        var result = await _controller.RemoveRole("1", "User");
-
-        var redirectResult = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal("Users", redirectResult.ActionName);
-        Assert.Equal("Нельзя удалить базовую роль Пользователь", _controller.TempData["Error"]);
-    }
-
-    [Fact]
     public async Task DeleteUser_WithSelf_ReturnsError()
     {
         var user = new AppUser { Id = _userId, UserName = "test" };

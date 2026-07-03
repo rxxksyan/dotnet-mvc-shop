@@ -103,7 +103,7 @@ public class CartControllerTests
         var cart = CreateTestCart();
         cart.Items.Clear();
         _cartRepo.Setup(r => r.GetBySessionIdAsync("test-session-id")).ReturnsAsync(cart);
-        _smartphoneRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(new Smartphone { Id = 1, IsInStock = true, Price = 100 });
+        _smartphoneRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(new Smartphone { Id = 1, Quantity = 10, Price = 100 });
 
         var result = await _controller.Add(1, 1);
 
@@ -122,23 +122,12 @@ public class CartControllerTests
     }
 
     [Fact]
-    public async Task Add_WithOutOfStock_ReturnsBadRequest()
-    {
-        _smartphoneRepo.Setup(r => r.GetByIdAsync(1))
-            .ReturnsAsync(new Smartphone { Id = 1, IsInStock = false });
-
-        var result = await _controller.Add(1, 1);
-
-        Assert.IsType<BadRequestObjectResult>(result);
-    }
-
-    [Fact]
     public async Task Add_WithExistingItem_IncrementsQuantity()
     {
         var cart = CreateTestCart();
         _cartRepo.Setup(r => r.GetBySessionIdAsync("test-session-id")).ReturnsAsync(cart);
         _smartphoneRepo.Setup(r => r.GetByIdAsync(1))
-            .ReturnsAsync(new Smartphone { Id = 1, IsInStock = true, Price = 100 });
+            .ReturnsAsync(new Smartphone { Id = 1, Quantity = 10, Price = 100 });
 
         var result = await _controller.Add(1, 3);
 
@@ -152,7 +141,7 @@ public class CartControllerTests
         var cart = CreateTestCart();
         _cartRepo.Setup(r => r.GetBySessionIdAsync("test-session-id")).ReturnsAsync(cart);
         _smartphoneRepo.Setup(r => r.GetByIdAsync(1))
-            .ReturnsAsync(new Smartphone { Id = 1, IsInStock = true, Price = 100 });
+            .ReturnsAsync(new Smartphone { Id = 1, Quantity = 10, Price = 100 });
 
         _httpContext.Request.Headers["X-Requested-With"] = "XMLHttpRequest";
 

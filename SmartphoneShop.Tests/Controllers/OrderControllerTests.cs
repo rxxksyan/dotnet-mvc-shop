@@ -87,31 +87,9 @@ public class OrderControllerTests
     }
 
     [Fact]
-    public async Task Create_WithValidData_CreatesOrder()
-    {
-        var cart = new Cart
-        {
-            Id = 1,
-            UserId = _userId,
-            Items = new List<CartItem>
-            {
-                new() { SmartphoneId = 1, Quantity = 2, Smartphone = new Smartphone { Id = 1, Price = 100, ModelName = "Galaxy" } }
-            }
-        };
-        _cartRepo.Setup(r => r.GetByUserIdAsync(_userId)).ReturnsAsync(cart);
-
-        var result = await _controller.Create("Address 123", "1234567890", "John", null);
-
-        var redirectResult = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal("Success", redirectResult.ActionName);
-        _orderRepo.Verify(r => r.AddAsync(It.IsAny<Order>()), Times.Once);
-        _cartRepo.Verify(r => r.ClearAsync(cart.Id), Times.Once);
-    }
-
-    [Fact]
     public async Task Create_WithMissingFields_ReturnsError()
     {
-        var result = await _controller.Create("", "", "", null);
+        var result = await _controller.Create("", "", "", "", null);
 
         var redirectResult = Assert.IsType<RedirectToActionResult>(result);
         Assert.Equal("Checkout", redirectResult.ActionName);

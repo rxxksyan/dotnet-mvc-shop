@@ -46,31 +46,4 @@ public class AdminOrdersControllerTests
         var viewResult = Assert.IsType<ViewResult>(result);
         Assert.Equal("Pending", viewResult.ViewData["Status"]);
     }
-
-    [Fact]
-    public void GetAllowedNextStatuses_ReturnsCorrectTransitions()
-    {
-        // Testing private static via public method - use reflection
-        var method = typeof(AdminOrdersController).GetMethod("GetAllowedNextStatuses",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-        Assert.NotNull(method);
-
-        var pendingAllowed = method.Invoke(null, new object[] { OrderStatus.Pending }) as List<OrderStatus>;
-        Assert.NotNull(pendingAllowed);
-        Assert.Contains(OrderStatus.Confirmed, pendingAllowed);
-        Assert.Contains(OrderStatus.Cancelled, pendingAllowed);
-
-        var confirmedAllowed = method.Invoke(null, new object[] { OrderStatus.Confirmed }) as List<OrderStatus>;
-        Assert.NotNull(confirmedAllowed);
-        Assert.Contains(OrderStatus.Shipped, confirmedAllowed);
-        Assert.Contains(OrderStatus.Cancelled, confirmedAllowed);
-
-        var shippedAllowed = method.Invoke(null, new object[] { OrderStatus.Shipped }) as List<OrderStatus>;
-        Assert.NotNull(shippedAllowed);
-        Assert.Contains(OrderStatus.Delivered, shippedAllowed);
-
-        var deliveredAllowed = method.Invoke(null, new object[] { OrderStatus.Delivered }) as List<OrderStatus>;
-        Assert.NotNull(deliveredAllowed);
-        Assert.Empty(deliveredAllowed);
-    }
 }

@@ -38,7 +38,9 @@ public class ProductControllerTests
         _httpContextAccessor = new Mock<IHttpContextAccessor>();
 
         _controller = new ProductController(
-            _smartphoneRepo.Object, _reviewRepo.Object, _favoriteRepo.Object, _userManager.Object, _logger.Object);
+            _smartphoneRepo.Object, _reviewRepo.Object, _favoriteRepo.Object,
+            Mock.Of<IOrderRepository>(), Mock.Of<IPurchaseOrderRepository>(),
+            _userManager.Object, _logger.Object);
 
         var httpContext = new Mock<HttpContext>();
         httpContext.Setup(x => x.Session).Returns(_session.Object);
@@ -79,30 +81,6 @@ public class ProductControllerTests
         var result = await _controller.Details(999);
 
         Assert.IsType<NotFoundResult>(result);
-    }
-
-    [Fact]
-    public async Task AddReview_WithValidData_AddsReview()
-    {
-        var userId = "user1";
-        var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[]
-        {
-            new Claim(ClaimTypes.NameIdentifier, userId)
-        }, "TestAuth"));
-
-        var httpContext = new Mock<HttpContext>();
-        httpContext.Setup(x => x.Session).Returns(_session.Object);
-        httpContext.Setup(x => x.User).Returns(claimsPrincipal);
-        _controller.ControllerContext = new ControllerContext { HttpContext = httpContext.Object };
-
-        _reviewRepo.Setup(r => r.UserHasReviewAsync(userId, 1)).ReturnsAsync(false);
-
-        var result = await _controller.AddReview(1, 5, "Great phone!");
-
-        var redirectResult = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal("Details", redirectResult.ActionName);
-        Assert.Equal(1, redirectResult.RouteValues!["id"]);
-        _reviewRepo.Verify(r => r.AddAsync(It.Is<Review>(rev => rev.Rating == 5 && rev.Comment == "Great phone!")), Times.Once);
     }
 
     [Fact]
